@@ -1,0 +1,14 @@
+/home/carlos/Code/c#/HulkCompiler/bin/Debug/net8.0/HulkCompiler
+/home/carlos/Code/c#/HulkCompiler/bin/Debug/net8.0/HulkCompiler.deps.json
+/home/carlos/Code/c#/HulkCompiler/bin/Debug/net8.0/HulkCompiler.runtimeconfig.json
+/home/carlos/Code/c#/HulkCompiler/bin/Debug/net8.0/HulkCompiler.dll
+/home/carlos/Code/c#/HulkCompiler/bin/Debug/net8.0/HulkCompiler.pdb
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/HulkCompiler.GeneratedMSBuildEditorConfig.editorconfig
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/HulkCompiler.AssemblyInfoInputs.cache
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/HulkCompiler.AssemblyInfo.cs
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/HulkCompiler.csproj.CoreCompileInputs.cache
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/HulkCompiler.dll
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/refint/HulkCompiler.dll
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/HulkCompiler.pdb
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/HulkCompiler.genruntimeconfig.cache
+/home/carlos/Code/c#/HulkCompiler/obj/Debug/net8.0/ref/HulkCompiler.dll
