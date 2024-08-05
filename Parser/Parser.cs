@@ -168,32 +168,59 @@ public class ParserLR1
     public AstNode Parse(Token[] tokens)
     {
         (Symbol, Token)[] symbols = (from token in tokens select (_mapping[token.Type], token)).ToArray();
-        Stack<int> statesStack = new();
+
+        Stack<int> controlStack = new();
+        Stack<int> stateStack = new([0]);
+
+        Stack<AstNode> astNodes = new();
         Stack<(Symbol, Token)> tokenStack = new();
-        statesStack.Push(0);
+
         int i = 0;
         while (true)
         {
-            int state = statesStack.Peek();
-            (Symbol, Token) token = symbols[i];
-            if (!_actionTable[state].TryGetValue(token.Item1, out IParsingAction? action)) { }
+            int actualState = stateStack.Pop();
+
+            (Symbol S, Token T) token = symbols[i];
+            if (!_actionTable[actualState].TryGetValue(token.S, out IParsingAction? action)) { }
             else
             {
-                if (action is Shift)
+                if (action is Shift shiftAction)
                 {
-                    Shift? shiftAction = action as Shift;
                     tokenStack.Push(token);
-                    statesStack.Push(shiftAction!.NextState);
+                    controlStack.Push(0);
+                    actualState = shiftAction!.NextState;
+                    i++;
                 }
-                else if (action is Reduce)
+                else if (action is Reduce reduceAction)
                 {
-                    Reduce? reduceAction = action as Reduce;
+                    List<AstNode> _nodes = [];
+                    List<Token> _tokens = [];
                     for (int j = 0; j < reduceAction!.Production.body.Length; j++)
                     {
+                        if (controlStack.Pop() == 0)
+                            _tokens.Add(tokenStack.Pop().Item2);
+                        else
+                            _nodes.Add(astNodes.Pop());
 
+                        stateStack.Pop();
                     }
-                }
+                    _nodes.Reverse();
+                    _tokens.Reverse();
 
+                    astNodes.Push(reduceAction.Production.body.Attributate([.. _tokens], [.. _nodes]));
+                    controlStack.Push(1);
+                    actualState = stateStack.Peek();
+                }
+                else if (action is GoTo goToAction)
+                {
+                    actualState = goToAction!.NextState;
+                }
+                else if (action is Accept)
+                {
+                    return astNodes.Pop();
+                }
+                else
+                    throw new Exception();
             }
 
         }
