@@ -1,8 +1,11 @@
-namespace Parser.Grammar;
+namespace HulkCompiler.Parser.Grammar;
 
 using System.Collections;
 using System.Text;
-using Parser.Ast;
+
+using HulkCompiler.Lexer.TokenClass;
+using HulkCompiler.Parser.Ast;
+
 
 public class Symbol(string value, Grammar grammar)
 {
@@ -42,7 +45,7 @@ public class Symbol(string value, Grammar grammar)
 
 public class NonTerminal(string value, Grammar grammar) : Symbol(value, grammar)
 {
-    public static NonTerminal operator %(NonTerminal self, (Sentence, Func<Sentence, AstNode>) attributation)
+    public static NonTerminal operator %(NonTerminal self, (Sentence, Func<Token[], AstNode[], AstNode>) attributation)
     {
         AttributedSentence attributedSentence = new(attributation.Item1, attributation.Item2);
 
@@ -59,7 +62,7 @@ public class NonTerminal(string value, Grammar grammar) : Symbol(value, grammar)
         return self;
     }
 
-    public static NonTerminal operator %(NonTerminal self, (Symbol, Func<Sentence, AstNode>) attributation)
+    public static NonTerminal operator %(NonTerminal self, (Symbol, Func<Token[], AstNode[], AstNode>) attributation)
     {
         AttributedSentence attributedSentence = new(new Sentence([attributation.Item1]), attributation.Item2);
         if (self._grammar.Productions.TryGetValue(self, out SentenceList? value))
@@ -111,11 +114,11 @@ public class Sentence(List<Symbol> symbols)
 
 }
 
-public class AttributedSentence(Sentence sentence, Func<Sentence, AstNode> attributation)
+public class AttributedSentence(Sentence sentence, Func<Token[], AstNode[], AstNode> attributation)
 {
     private readonly Sentence _sentence = sentence;
 
-    private readonly Func<Sentence, AstNode> _attributation = attributation;
+    private readonly Func<Token[], AstNode[], AstNode> _attributation = attributation;
 
     public int Length { get => _sentence.Length; }
 
@@ -127,7 +130,7 @@ public class AttributedSentence(Sentence sentence, Func<Sentence, AstNode> attri
         return _sentence.ToString() + _attributation.ToString();
     }
 
-    public AstNode Attributate() => _attributation(_sentence);
+    public AstNode Attributate(Token[] tokens, AstNode[] nodes) => _attributation(tokens, nodes);
 
 }
 

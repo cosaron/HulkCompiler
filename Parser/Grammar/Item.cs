@@ -1,6 +1,7 @@
+namespace HulkCompiler.Parser.Grammar;
+
 using System.Diagnostics;
 using System.Text;
-namespace Parser.Grammar;
 
 public class Item : IEquatable<Item>
 {

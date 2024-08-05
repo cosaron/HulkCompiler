@@ -1,7 +1,5 @@
-namespace SemanticAnalizer.Types;
+namespace HulkCompiler.SemanticAnalizer.Types;
 
 public class TypeClass { }
 
 
-
-public class UnkonwnType : TypeClass;

@@ -1,14 +1,16 @@
+namespace HulkCompiler.Parser;
+//External Imports
 using System.Collections.Frozen;
-using System.Collections.Generic;
-using Parser.Grammar;
-using Lexer.Token;
+//Internal Imports
+using HulkCompiler.Parser.Grammar;
+using HulkCompiler.Lexer.TokenClass;
 
-using Grammar_ = Parser.Grammar.Grammar;
-using ActionTable = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<Parser.Grammar.Symbol, Parser.IParsingAction>>;
-using ParserTable = System.Collections.Generic.Dictionary<int, System.Collections.Generic.Dictionary<Parser.Grammar.Symbol, int>>;
-using Parser.Ast;
+//Alias
+using Grammar_ = HulkCompiler.Parser.Grammar.Grammar;
+using ActionTable = Dictionary<int, Dictionary<Grammar.Symbol, IParsingAction>>;
+using ParserTable = Dictionary<int, Dictionary<Grammar.Symbol, int>>;
+using HulkCompiler.Parser.Ast;
 
-namespace Parser;
 
 interface IParsingAction;
 
@@ -41,9 +43,9 @@ public class ParserLR1
     private readonly ActionTable _actionTable;
 
 
-    private ActionTable _compileGrammar()
+    private ActionTable CompileGrammar()
     {
-        var (states, goTo) = _buildStates();
+        var (states, goTo) = BuildStates();
 
         ActionTable actionTable = [];
 
@@ -90,7 +92,7 @@ public class ParserLR1
         return actionTable;
 
     }
-    private (Dictionary<int, HashSet<Item>>, ParserTable) _buildStates()
+    private (Dictionary<int, HashSet<Item>>, ParserTable) BuildStates()
     {
         Dictionary<Symbol, HashSet<Symbol>> firsts = _grammar.GetFirst();
 
@@ -160,7 +162,7 @@ public class ParserLR1
     {
         _grammar = grammar;
         _mapping = mapping;
-        _actionTable = _compileGrammar();
+        _actionTable = CompileGrammar();
     }
 
     public AstNode Parse(Token[] tokens)
