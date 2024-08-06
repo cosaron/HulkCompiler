@@ -12,6 +12,7 @@ public class Token(string lex, TokenType type, int lineNumber = -1, int columnSt
 }
 
 public enum TokenType
+
 {
     AND,
     OR,

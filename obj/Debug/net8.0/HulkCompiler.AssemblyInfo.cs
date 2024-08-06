@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HulkCompiler")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4c2859eecfd559749e10f7fc4cd9b6314cb9acd2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+619f5b6f7d93c0b12f0f60a1e67fec35d80b3a13")]
 [assembly: System.Reflection.AssemblyProductAttribute("HulkCompiler")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HulkCompiler")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

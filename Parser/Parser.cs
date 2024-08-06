@@ -181,7 +181,8 @@ public class ParserLR1
             int actualState = stateStack.Pop();
 
             (Symbol S, Token T) token = symbols[i];
-            if (!_actionTable[actualState].TryGetValue(token.S, out IParsingAction? action)) { }
+            if (!_actionTable[actualState].TryGetValue(token.S, out IParsingAction? action))
+                throw new Exception();
             else
             {
                 if (action is Shift shiftAction)
