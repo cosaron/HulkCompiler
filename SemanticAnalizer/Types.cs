@@ -1,4 +1,4 @@
-namespace HulkCompiler.SemanticAnalizer.Types;
+namespace HulkCompiler.SemanticAnalizer;
 
 
 public class Variable(string name, Type type) : IEquatable<Variable>
@@ -68,6 +68,7 @@ public class Type(
 
     public bool ConformsTo(Type other)
     {
+        if (other is UnknownType) return true;
         if (this == other) return true;
         if (Parent != null) return Parent.ConformsTo(other);
 
@@ -124,6 +125,11 @@ public class Protocol(string name, params Method[] methods) : IEquatable<Protoco
 }
 
 
+public class UnknownType : Type
+{
+    static public UnknownType Instance { get; private set; } = new();
+    private UnknownType() : base("Unknown") { }
+}
 
 public class ObjectType : Type
 {
