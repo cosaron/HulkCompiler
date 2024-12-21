@@ -1,4 +1,4 @@
-namespace HulkCompiler.Lexer.TokenClass;
+namespace HulkCompiler.Lexer;
 
 public class Token(string lex, TokenType type, int lineNumber = -1, int columnStartNumber = -1, int columnEndNumber = -1)
 {

@@ -1,7 +1,7 @@
 namespace HulkCompiler.Parser.Ast;
 
 
-using HulkCompiler.SemanticAnalizer.Types;
+using HulkCompiler.SemanticAnalizer;
 using NodePosition = (int Line, int ColumnStart, int ColumnEnd);
 
 
@@ -296,14 +296,14 @@ public class TypeDefinitionNode : DefineStatement
 }
 
 
-public abstract class Expression(NodePosition position, TypeClass? inferredType) : AstNode(position)
+public abstract class Expression(NodePosition position, Type? inferredType) : AstNode(position)
 {
-    public TypeClass? InferredType { get; set; } = inferredType;
+    public Type? InferredType { get; set; } = inferredType;
 
 }
 
 
-public class LiteralNode(string value, NodePosition position, TypeClass? inferredType = null) : Expression(position, inferredType)
+public class LiteralNode(string value, NodePosition position, Type? inferredType = null) : Expression(position, inferredType)
 {
     public string Value { get; } = value;
 
@@ -311,7 +311,7 @@ public class LiteralNode(string value, NodePosition position, TypeClass? inferre
 
 public class NegativeNode : Expression
 {
-    public NegativeNode(AstNode expression, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public NegativeNode(AstNode expression, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (expression is Expression ex)
             Expression = ex;
@@ -324,7 +324,7 @@ public class NegativeNode : Expression
 
 public class PositiveNode : Expression
 {
-    public PositiveNode(AstNode expression, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public PositiveNode(AstNode expression, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (expression is Expression ex)
             Expression = ex;
@@ -336,7 +336,7 @@ public class PositiveNode : Expression
 
 public class NotNode : Expression
 {
-    public NotNode(AstNode expression, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public NotNode(AstNode expression, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (expression is Expression ex)
             Expression = ex;
@@ -348,7 +348,7 @@ public class NotNode : Expression
 
 public class BinaryExpressionNode : Expression
 {
-    public BinaryExpressionNode(AstNode left, Operator op, AstNode right, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public BinaryExpressionNode(AstNode left, Operator op, AstNode right, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (left is Expression l && right is Expression r)
         {
@@ -369,7 +369,7 @@ public class BinaryExpressionNode : Expression
 
 public class IndexNode : Expression
 {
-    public IndexNode(AstNode obj, AstNode index, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public IndexNode(AstNode obj, AstNode index, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (obj is Expression _obj && index is Expression _index)
         {
@@ -384,13 +384,13 @@ public class IndexNode : Expression
 
 }
 
-public class IdentifierNode(string identifier, NodePosition position, TypeClass? inferredType = null) : Expression(position, inferredType)
+public class IdentifierNode(string identifier, NodePosition position, Type? inferredType = null) : Expression(position, inferredType)
 {
     public string Identifier { get; } = identifier;
 
 }
 
-public class ParameterNode(string identifier, NodePosition position, TypeClass? inferredType = null, string? staticType = null) : Expression(position, inferredType)
+public class ParameterNode(string identifier, NodePosition position, Type? inferredType = null, string? staticType = null) : Expression(position, inferredType)
 {
     public string Identifier { get; } = identifier;
     public string? StaticType { get; } = staticType;
@@ -418,7 +418,7 @@ public class ParameterListNode : AstNode
 
 public class ExpressionBlock : Expression
 {
-    public ExpressionBlock(AstNode[] expressions, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public ExpressionBlock(AstNode[] expressions, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (expressions is Expression[] _expressions)
             Expressions = _expressions;
@@ -437,7 +437,7 @@ public class ExpressionBlock : Expression
 }
 public class ForNode : Expression
 {
-    public ForNode(string indexIdentifier, AstNode iterable, AstNode body, NodePosition position, TypeClass? inferredType = null, TypeClass? indexType = null) : base(position, inferredType)
+    public ForNode(string indexIdentifier, AstNode iterable, AstNode body, NodePosition position, Type? inferredType = null, Type? indexType = null) : base(position, inferredType)
     {
         if (iterable is Expression _iterable && body is Expression _body)
         {
@@ -452,12 +452,12 @@ public class ForNode : Expression
     public string IndexIdentifier { get; }
     public Expression Iterable { get; }
     public Expression Body { get; }
-    public TypeClass? IterableType { get; set; }
+    public Type? IterableType { get; set; }
 }
 
 public class WhileNode : Expression
 {
-    public WhileNode(AstNode condition, AstNode body, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public WhileNode(AstNode condition, AstNode body, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (condition is Expression _condition && body is Expression _body)
         {
@@ -473,7 +473,7 @@ public class WhileNode : Expression
 
 public class IfNode : Expression
 {
-    public IfNode(AstNode condition, AstNode body, AstNode? elifClauses, AstNode? elseBody, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public IfNode(AstNode condition, AstNode body, AstNode? elifClauses, AstNode? elseBody, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (condition is Expression _condition && body is Expression _body)
         {
@@ -527,7 +527,7 @@ public class ElifClausesNodes : AstNode
 
 public class ElifNode : Expression
 {
-    public ElifNode(AstNode condition, AstNode body, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public ElifNode(AstNode condition, AstNode body, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (condition is Expression _condition && body is Expression _body)
         {
@@ -580,7 +580,7 @@ public class VariableDeclarationListNode : DefineStatement
 
 public class LetNode : Expression
 {
-    public LetNode(AstNode declarations, AstNode body, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public LetNode(AstNode declarations, AstNode body, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (declarations is VariableDeclarationListNode _declarations && body is Expression _body)
         {
@@ -596,7 +596,7 @@ public class LetNode : Expression
 
 public class DestructiveAssignmentNode : Expression
 {
-    public DestructiveAssignmentNode(AstNode identifier, AstNode expression, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public DestructiveAssignmentNode(AstNode identifier, AstNode expression, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (identifier is Expression _identifier && expression is Expression _expression)
         {
@@ -614,7 +614,7 @@ public class DestructiveAssignmentNode : Expression
 
 public class InstanciateNode : Expression
 {
-    public InstanciateNode(string identifier, AstNode[] parameters, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public InstanciateNode(string identifier, AstNode[] parameters, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (parameters is Expression[] _parameters)
         {
@@ -631,7 +631,7 @@ public class InstanciateNode : Expression
 
 public class InvocationNode : Expression
 {
-    public InvocationNode(string identifier, AstNode[] arguments, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public InvocationNode(string identifier, AstNode[] arguments, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (arguments is Expression[] _arguments)
         {
@@ -647,7 +647,7 @@ public class InvocationNode : Expression
 
 public class AttributeCallNode : Expression
 {
-    public AttributeCallNode(AstNode obj, string identifier, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public AttributeCallNode(AstNode obj, string identifier, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (obj is Expression _expression)
         {
@@ -663,7 +663,7 @@ public class AttributeCallNode : Expression
 
 public class FunctionCallNode : Expression
 {
-    public FunctionCallNode(AstNode obj, AstNode invocation, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public FunctionCallNode(AstNode obj, AstNode invocation, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (obj is Expression _obj && invocation is InvocationNode _invocation)
         {
@@ -679,7 +679,7 @@ public class FunctionCallNode : Expression
 
 public class VectorNode : Expression
 {
-    public VectorNode(AstNode[] elements, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public VectorNode(AstNode[] elements, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (elements is Expression[] _elements)
             Elements = _elements;
@@ -691,7 +691,7 @@ public class VectorNode : Expression
 
 public class ComprehensionVectorNode : Expression
 {
-    public ComprehensionVectorNode(AstNode generator, string identifier, AstNode iterator, NodePosition position, TypeClass? inferredType = null) : base(position, inferredType)
+    public ComprehensionVectorNode(AstNode generator, string identifier, AstNode iterator, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (generator is Expression _generator && iterator is Expression _iterator)
         {
