@@ -125,3 +125,51 @@ public class Protocol(string name, params Method[] methods) : IEquatable<Protoco
 
 
 
+public class ObjectType : Type
+{
+    static public ObjectType Instance { get; private set; } = new();
+    private ObjectType() : base("Object") { }
+
+}
+
+public class NumberType : Type
+{
+    static public NumberType Instance { get; private set; } = new();
+    private NumberType() : base("Number", ObjectType.Instance) { }
+}
+
+public class StringType : Type
+{
+    static public StringType Instance { get; private set; } = new();
+    private StringType() : base("String", ObjectType.Instance) { }
+}
+
+public class BooleanType : Type
+{
+    static public BooleanType Instance { get; private set; } = new();
+    private BooleanType() : base("Boolean", ObjectType.Instance) { }
+}
+
+public class RangeType : Type
+{
+    static public RangeType Instance { get; private set; } = new();
+    private RangeType() : base(
+        name: "Range",
+        parent: ObjectType.Instance,
+        parameters: [new("min", NumberType.Instance), new("max", NumberType.Instance)],
+        methods: [new("current", NumberType.Instance), new("next", BooleanType.Instance)],
+        attributes: [new("min", NumberType.Instance), new("max", NumberType.Instance), new("current", NumberType.Instance)]
+    )
+    { }
+}
+
+public class VectorType(Type itemsType) : Type(
+    name: "Vector",
+    parent: ObjectType.Instance,
+    parameters: [],
+    methods: [new("current", itemsType), new("next", BooleanType.Instance), new("size", NumberType.Instance)],
+    attributes: []
+    )
+{
+    public Type ItemsType { get; private set; } = itemsType;
+}
