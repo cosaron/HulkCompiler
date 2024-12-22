@@ -2,6 +2,7 @@ namespace HulkCompiler.Parser.Grammar;
 
 using HulkCompiler.Lexer;
 using HulkCompiler.Parser.Ast;
+using HulkCompiler.SemanticAnalizer;
 using HulkCompiler.Utils;
 
 
@@ -400,10 +401,10 @@ public static class HulkGrammar
         }
         );
 
-        literal %= (numberLiteral, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position));
-        literal %= (stringLiteral, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position));
-        literal %= (trueTerminal, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position));
-        literal %= (falseTerminal, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position));
+        literal %= (numberLiteral, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position, NumberType.Instance));
+        literal %= (stringLiteral, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position, StringType.Instance));
+        literal %= (trueTerminal, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position, BooleanType.Instance));
+        literal %= (falseTerminal, (tokens, _) => new LiteralNode(tokens[0].Lex, tokens[0].Position, BooleanType.Instance));
 
         var mapping = new Dictionary<TokenType, Symbol>
         {

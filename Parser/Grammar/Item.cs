@@ -20,7 +20,7 @@ public class Item : IEquatable<Item>
 
     public Item(NonTerminal head, AttributedSentence body, int dotPosition, Symbol lookAhead)
     {
-        Debug.Assert(0 <= dotPosition && dotPosition <= body.Length);
+        Debug.Assert(0 <= dotPosition && dotPosition <= body.Length, "");
 
         Head = head;
         Body = body;
@@ -30,7 +30,7 @@ public class Item : IEquatable<Item>
 
     public Item MoveDot()
     {
-        Debug.Assert(DotPosition <= Body.Length);
+        Debug.Assert(DotPosition <= Body.Length, "");
         return new Item(Head, Body, DotPosition++, LookAhead);
     }
 
@@ -57,15 +57,17 @@ public class Item : IEquatable<Item>
         return sb.ToString();
     }
 
-    public bool Equals(Item? other)
-    {
-        if (other is null) return false;
-        return Head == other.Head && Body == other.Body && DotPosition == other.DotPosition && LookAhead == other.LookAhead;
-    }
+    public bool Equals(Item? other) =>
+        other is not null
+        && Head == other.Head
+        && Body == other.Body
+        && DotPosition == other.DotPosition
+        && LookAhead == other.LookAhead;
+
 
     public override bool Equals(object? obj)
     {
-        return ReferenceEquals(this, obj) && Equals(obj as Item);
+        return obj is Item i && Equals(i);
     }
 
     public override int GetHashCode()
