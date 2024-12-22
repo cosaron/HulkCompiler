@@ -1,8 +1,8 @@
 namespace HulkCompiler.Parser.Grammar;
 
-using HulkCompiler.Lexer.TokenClass;
+using HulkCompiler.Lexer;
 using HulkCompiler.Parser.Ast;
-using Utils;
+using HulkCompiler.Utils;
 
 
 public static class HulkGrammar
@@ -36,8 +36,8 @@ public static class HulkGrammar
         grammar.SetSeed(program);
 
 
-        program %= (headProgram + statement, (_, nodes) => new Program(nodes[0], nodes[1], nodes[1].Position));
-        program %= (statement, (_, nodes) => new Program(null, nodes[0], nodes[0].Position));
+        program %= (headProgram + statement, (_, nodes) => new ProgramNode(nodes[0], nodes[1], nodes[1].Position));
+        program %= (statement, (_, nodes) => new ProgramNode(null, nodes[0], nodes[0].Position));
 
         headProgram %= (headProgram + defineStatement, (_, nodes) =>
         {
@@ -52,14 +52,14 @@ public static class HulkGrammar
         defineStatement %= (typeDefinition, (_, nodes) => nodes[0]);
         defineStatement %= (protocolDefinition, (_, nodes) => nodes[0]);
 
-        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], nodes[2], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), nodes[1]));
-        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), nodes[1]));
-        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), nodes[0]));
-        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber)));
-        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, null, nodes[1], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), nodes[0]));
-        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, null, null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), nodes[0]));
-        typeDefinition %= (typeTerminal + identifier + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, null, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber)));
-        typeDefinition %= (typeTerminal + identifier + openBrace + closeBrace, (tokens, _) => new TypeDefinitionNode(tokens[1].Lex, null, null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber)));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], nodes[2], (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End)));
+        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, null, nodes[1], (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, null, null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        typeDefinition %= (typeTerminal + identifier + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(tokens[1].Lex, null, nodes[0], (tokens[0].Position.Start, tokens[3].Position.End)));
+        typeDefinition %= (typeTerminal + identifier + openBrace + closeBrace, (tokens, _) => new TypeDefinitionNode(tokens[1].Lex, null, null, (tokens[0].Position.Start, tokens[3].Position.End)));
 
         typeBody %= (typeAttributes + typeFunctions, (_, nodes) =>
         {
@@ -101,13 +101,13 @@ public static class HulkGrammar
         );
         typeFunctions %= (functionDefinition, (_, nodes) => new FunctionDefinitionList([nodes[0]], nodes[0].Position));
 
-        attributeDefinition %= (identifier + typeDeclaration + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(tokens[0].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[2].Position.ColumnEndNumber), tokens[1].Lex));
-        attributeDefinition %= (identifier + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(tokens[0].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[2].Position.ColumnEndNumber)));
+        attributeDefinition %= (identifier + typeDeclaration + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(tokens[0].Lex, nodes[0], (tokens[0].Position.Start, tokens[2].Position.End), tokens[1].Lex));
+        attributeDefinition %= (identifier + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(tokens[0].Lex, nodes[0], (tokens[0].Position.Start, tokens[2].Position.End)));
 
         typeArguments %= (openParenthesis + argumentListDefinition + closeParenthesis, (_, nodes) => nodes[0]);
 
-        typeInherits %= (inheritsTerminal + identifier + inheritsDeclaration, (tokens, nodes) => new InheritsNode(tokens[0].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
-        typeInherits %= (inheritsTerminal + identifier, (tokens, _) => new InheritsNode(tokens[1].Lex, null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[1].Position.ColumnEndNumber)));
+        typeInherits %= (inheritsTerminal + identifier + inheritsDeclaration, (tokens, nodes) => new InheritsNode(tokens[0].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
+        typeInherits %= (inheritsTerminal + identifier, (tokens, _) => new InheritsNode(tokens[1].Lex, null, (tokens[0].Position.Start, tokens[1].Position.End)));
 
         typeDeclaration %= (colon + identifier, (tokens, _) => new TypeDeclaration(tokens[0].Lex));
         typeDeclaration %= (colon + numberTypeDeclaration, (tokens, _) => new TypeDeclaration(tokens[0].Lex));
@@ -120,15 +120,15 @@ public static class HulkGrammar
         functionDefinition %= (inlineFunction, (_, nodes) => nodes[0]);
         functionDefinition %= (blockFunction, (_, nodes) => nodes[0]);
 
-        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd), tokens[3].Lex));
-        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd)));
-        inlineFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd), tokens[3].Lex));
-        inlineFunction %= (identifier + openParenthesis + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End), tokens[3].Lex));
+        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End)));
+        inlineFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.Start, nodes[1].Position.End), tokens[3].Lex));
+        inlineFunction %= (identifier + openParenthesis + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.Start, nodes[0].Position.End)));
 
-        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd), tokens[3].Lex));
-        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd)));
-        blockFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd), tokens[3].Lex));
-        blockFunction %= (identifier + openParenthesis + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End), tokens[3].Lex));
+        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End)));
+        blockFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.Start, nodes[0].Position.End), tokens[3].Lex));
+        blockFunction %= (identifier + openParenthesis + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(tokens[0].Lex, nodes[0], null, (tokens[0].Position.Start, nodes[0].Position.End)));
 
         argumentListDefinition %= (argumentListDefinition + comma + identifier + typeDeclaration, (tokens, nodes) =>
         {
@@ -147,10 +147,10 @@ public static class HulkGrammar
         argumentListDefinition %= (identifier + typeDeclaration, (tokens, _) => new ParameterListNode([new ParameterNode(tokens[0].Lex, tokens[0].Position, staticType: tokens[1].Lex)], tokens[0].Position));
         argumentListDefinition %= (identifier, (tokens, _) => new ParameterListNode([new ParameterNode(tokens[0].Lex, tokens[0].Position)], tokens[0].Position));
 
-        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), nodes[1]));
-        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), nodes[0]));
-        protocolDefinition %= (protocolTerminal + identifier + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), null));
-        protocolDefinition %= (protocolTerminal + identifier + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), null));
+        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
+        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        protocolDefinition %= (protocolTerminal + identifier + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, tokens[3].Position.End), null));
+        protocolDefinition %= (protocolTerminal + identifier + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(tokens[1].Lex, null, (tokens[0].Position.Start, tokens[3].Position.End), null));
 
         extendsDefinition %= (extendsTerminal + identifier + extendsMultipleIdentifier, (tokens, nodes) =>
         {
@@ -173,19 +173,19 @@ public static class HulkGrammar
         protocolBody %= (protocolBody + identifier + openParenthesis + protocolArgumentsDefinition + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) =>
         {
             var functionList = nodes[0] as FunctionDefinitionList ?? throw new Exception();
-            functionList.AppendFunction(new FunctionDefinitionNode(tokens[0].Lex, null, nodes[1], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), tokens[3].Lex));
+            functionList.AppendFunction(new FunctionDefinitionNode(tokens[0].Lex, null, nodes[1], (tokens[0].Position.Start, tokens[3].Position.End), tokens[3].Lex));
             return functionList;
         }
         );
         protocolBody %= (protocolBody + identifier + openParenthesis + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) =>
         {
             var functionList = nodes[0] as FunctionDefinitionList ?? throw new Exception();
-            functionList.AppendFunction(new FunctionDefinitionNode(tokens[0].Lex, null, null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), tokens[3].Lex));
+            functionList.AppendFunction(new FunctionDefinitionNode(tokens[0].Lex, null, null, (tokens[0].Position.Start, tokens[3].Position.End), tokens[3].Lex));
             return functionList;
         }
         );
-        protocolBody %= (identifier + openParenthesis + protocolArgumentsDefinition + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(tokens[0].Lex, null, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), tokens[3].Lex)], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber)));
-        protocolBody %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(tokens[0].Lex, null, null, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber), tokens[3].Lex)], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber)));
+        protocolBody %= (identifier + openParenthesis + protocolArgumentsDefinition + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(tokens[0].Lex, null, nodes[0], (tokens[0].Position.Start, tokens[3].Position.End), tokens[3].Lex)], (tokens[0].Position.Start, tokens[3].Position.End)));
+        protocolBody %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(tokens[0].Lex, null, null, (tokens[0].Position.Start, tokens[3].Position.End), tokens[3].Lex)], (tokens[0].Position.Start, tokens[3].Position.End)));
 
         protocolArgumentsDefinition %= (identifier + typeDeclaration + protocolMultipleArgumentsDefinition, (tokens, nodes) =>
         {
@@ -209,12 +209,12 @@ public static class HulkGrammar
 
         statementList %= (statementList + statement, (_, nodes) =>
         {
-            var expressionBlock = nodes[0] as ExpressionBlock ?? throw new Exception();
+            var expressionBlock = nodes[0] as ExpressionBlockNode ?? throw new Exception();
             expressionBlock.AppendExpression(nodes[1]);
             return expressionBlock;
         }
         );
-        statementList %= (statement, (_, nodes) => new ExpressionBlock([nodes[0]], nodes[0].Position));
+        statementList %= (statement, (_, nodes) => new ExpressionBlockNode([nodes[0]], nodes[0].Position));
 
         statement %= (expressionBlock + semicolon, (_, nodes) => nodes[0]);
         statement %= (expressionBlock, (_, nodes) => nodes[0]);
@@ -223,14 +223,14 @@ public static class HulkGrammar
         statement %= (controlStatement + semicolon, (_, nodes) => nodes[0]);
 
         controlStatement %= (ifStatement, (_, nodes) => nodes[0]);
-        controlStatement %= (whileHeader + statement, (tokens, nodes) => new WhileNode(nodes[0], nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        controlStatement %= (whileHeader + statement, (tokens, nodes) => new WhileNode(nodes[0], nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         controlStatement %= (forHeader + statement, (tokens, nodes) =>
         {
             var declaration = nodes[0] as VariableDeclarationNode ?? throw new Exception();
-            return new ForNode(declaration.Identifier, declaration.Value, nodes[1], (declaration.Position.Line, declaration.Position.ColumnStart, nodes[1].Position.ColumnEnd));
+            return new ForNode(declaration.Identifier, declaration.Value, nodes[1], (declaration.Position.Start, nodes[1].Position.End));
         }
         );
-        controlStatement %= (letHeader + statement, (_, nodes) => new LetNode(nodes[0], nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        controlStatement %= (letHeader + statement, (_, nodes) => new LetNode(nodes[0], nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
 
         expression %= (expressionBlock, (_, nodes) => nodes[0]);
         expression %= (destructiveAssignment, (_, nodes) => nodes[0]);
@@ -238,69 +238,68 @@ public static class HulkGrammar
         expression %= (controlExpression, (_, nodes) => nodes[0]);
 
         controlExpression %= (ifExpression, (_, nodes) => nodes[0]);
-        controlExpression %= (whileHeader + expression, (_, nodes) => new WhileNode(nodes[0], nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        controlExpression %= (whileHeader + expression, (_, nodes) => new WhileNode(nodes[0], nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         controlExpression %= (forHeader + expression, (_, nodes) =>
         {
             var declaration = (VariableDeclarationNode)nodes[0];
-            return new ForNode(declaration.Identifier, declaration.Value, nodes[1], (declaration.Position.Line, declaration.Position.ColumnStart, nodes[1].Position.ColumnEnd));
+            return new ForNode(declaration.Identifier, declaration.Value, nodes[1], (declaration.Position.Start, nodes[1].Position.End));
         }
         );
-        controlExpression %= (letHeader + expression, (_, nodes) => new LetNode(nodes[0], nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        controlExpression %= (letHeader + expression, (_, nodes) => new LetNode(nodes[0], nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
 
-        ifStatement %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elifStatement + elseTerminal + statement, (tokens, nodes) => new IfNode(nodes[0], nodes[1], nodes[2], nodes[3], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[3].Position.ColumnEnd)));
-        ifStatement %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elseTerminal + statement, (tokens, nodes) => new IfNode(nodes[0], nodes[1], null, nodes[2], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[2].Position.ColumnEnd)));
+        ifStatement %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elifStatement + elseTerminal + statement, (tokens, nodes) => new IfNode(nodes[0], nodes[1], nodes[2], nodes[3], (tokens[0].Position.Start, nodes[3].Position.End)));
+        ifStatement %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elseTerminal + statement, (tokens, nodes) => new IfNode(nodes[0], nodes[1], null, nodes[2], (tokens[0].Position.Start, nodes[2].Position.End)));
 
         elifStatement %= (elifStatement + elifTerminal + openParenthesis + expression + closeParenthesis + statement, (tokens, nodes) =>
         {
             var elifClauses = nodes[0] as ElifClausesNodes ?? throw new Exception();
-            elifClauses.AppendElif(new ElifNode(nodes[1], nodes[2], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[2].Position.ColumnEnd)));
+            elifClauses.AppendElif(new ElifNode(nodes[1], nodes[2], (tokens[0].Position.Start, nodes[2].Position.End)));
             return elifClauses;
         }
         );
-        elifStatement %= (elifTerminal + openParenthesis + expression + closeParenthesis + statement, (tokens, nodes) => new ElifClausesNodes([new ElifNode(nodes[0], nodes[1], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd))], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd)));
+        elifStatement %= (elifTerminal + openParenthesis + expression + closeParenthesis + statement, (tokens, nodes) => new ElifClausesNodes([new ElifNode(nodes[0], nodes[1], (tokens[0].Position.Start, nodes[1].Position.End))], (tokens[0].Position.Start, nodes[1].Position.End)));
 
         whileHeader %= (whileTerminal + openParenthesis + expression + closeParenthesis, (_, nodes) => nodes[0]);
 
-        forHeader %= (forTerminal + openParenthesis + identifier + typeDeclaration + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(tokens[2].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[5].Position.ColumnEndNumber), tokens[4].Lex));
-        forHeader %= (forTerminal + openParenthesis + identifier + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(tokens[2].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[4].Position.ColumnEndNumber)));
+        forHeader %= (forTerminal + openParenthesis + identifier + typeDeclaration + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(tokens[2].Lex, nodes[0], (tokens[0].Position.Start, tokens[5].Position.End), tokens[4].Lex));
+        forHeader %= (forTerminal + openParenthesis + identifier + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(tokens[2].Lex, nodes[0], (tokens[0].Position.Start, tokens[4].Position.End)));
 
         letHeader %= (letTerminal + identifier + typeDeclaration + assignmentTerminal + expression + multipleDeclaration + inTerminal, (tokens, nodes) =>
         {
             var declarationList = (VariableDeclarationListNode)nodes[1];
-            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
             return declarationList;
         }
         );
-        letHeader %= (letTerminal + identifier + typeDeclaration + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd), tokens[2].Lex), (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[4].Position.ColumnEndNumber
-        )));
+        letHeader %= (letTerminal + identifier + typeDeclaration + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End), tokens[2].Lex), (tokens[0].Position.Start, tokens[4].Position.End)));
         letHeader %= (letTerminal + identifier + assignmentTerminal + expression + multipleDeclaration + inTerminal, (tokens, nodes) =>
         {
             var declarationList = (VariableDeclarationListNode)nodes[1];
-            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
             return declarationList;
         }
         );
-        letHeader %= (letTerminal + identifier + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)), (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber)));
+        letHeader %= (letTerminal + identifier + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)), (tokens[0].Position.Start, tokens[3].Position.End)));
 
         multipleDeclaration %= (comma + identifier + typeDeclaration + assignmentTerminal + expression + multipleDeclaration, (tokens, nodes) =>
         {
             var declarationList = nodes[1] as VariableDeclarationListNode ?? throw new Exception();
-            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd), tokens[2].Lex));
+            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End), tokens[2].Lex));
             return declarationList;
         }
         );
-        multipleDeclaration %= (comma + identifier + typeDeclaration + assignmentTerminal + expression, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd), tokens[2].Lex), (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+        multipleDeclaration %= (comma + identifier + typeDeclaration + assignmentTerminal + expression, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End), tokens[2].Lex), (tokens[0].Position.Start, nodes[0].Position.End)));
         multipleDeclaration %= (comma + identifier + assignmentTerminal + expression + multipleDeclaration, (tokens, nodes) =>
         {
             var declarationList = nodes[1] as VariableDeclarationListNode ?? throw new Exception();
-            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+            declarationList.AppendDeclaration(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
             return declarationList;
         }
         );
-        multipleDeclaration %= (comma + identifier + assignmentTerminal + expression, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)), (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+        multipleDeclaration %= (comma + identifier + assignmentTerminal + expression, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(tokens[1].Lex, nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)), (tokens[0].Position.Start, nodes[0].Position.End)));
 
-        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elifExpression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], null, nodes[2], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[2].Position.ColumnEnd)));
-        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], nodes[2], nodes[3], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[3].Position.ColumnEnd)));
+        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elifExpression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], null, nodes[2], (tokens[0].Position.Start, nodes[2].Position.End)));
+        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], nodes[2], nodes[3], (tokens[0].Position.Start, nodes[3].Position.End)));
 
         elifExpression %= (elifExpression + elifTerminal + openParenthesis + expression + closeParenthesis + statement, (_, nodes) =>
         {
@@ -309,49 +308,49 @@ public static class HulkGrammar
             return elifNodes;
         }
         );
-        elifExpression %= (elifTerminal + openParenthesis + expression + closeParenthesis + statement, (tokens, nodes) => new ElifClausesNodes([new ElifNode(nodes[0], nodes[1], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[1].Position.ColumnEnd))], nodes[0].Position));
+        elifExpression %= (elifTerminal + openParenthesis + expression + closeParenthesis + statement, (tokens, nodes) => new ElifClausesNodes([new ElifNode(nodes[0], nodes[1], (tokens[0].Position.Start, nodes[1].Position.End))], nodes[0].Position));
 
 
-        destructiveAssignment %= (identifier + destructiveAssignmentTerminal + expression, (tokens, nodes) => new DestructiveAssignmentNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
-        destructiveAssignment %= (memberAccess + destructiveAssignmentTerminal + expression, (_, nodes) => new DestructiveAssignmentNode(nodes[0], nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        destructiveAssignment %= (identifier + destructiveAssignmentTerminal + expression, (tokens, nodes) => new DestructiveAssignmentNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
+        destructiveAssignment %= (memberAccess + destructiveAssignmentTerminal + expression, (_, nodes) => new DestructiveAssignmentNode(nodes[0], nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
 
-        orExpression %= (orExpression + orTerminal + andExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.OR, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        orExpression %= (orExpression + orTerminal + andExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.OR, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         orExpression %= (andExpression, (_, nodes) => nodes[0]);
 
-        andExpression %= (andExpression + andTerminal + equalityExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.AND, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        andExpression %= (andExpression + andTerminal + equalityExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.AND, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         andExpression %= (equalityExpression, (_, nodes) => nodes[0]);
 
-        equalityExpression %= (equalityExpression + equalTerminal + relationalExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.EQ, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        equalityExpression %= (equalityExpression + notEqualTerminal + relationalExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.NEQ, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        equalityExpression %= (equalityExpression + equalTerminal + relationalExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.EQ, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        equalityExpression %= (equalityExpression + notEqualTerminal + relationalExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.NEQ, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         equalityExpression %= (relationalExpression, (_, nodes) => nodes[0]);
 
-        relationalExpression %= (relationalExpression + less + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.LTE, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        relationalExpression %= (relationalExpression + lessEqual + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.LT, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        relationalExpression %= (relationalExpression + greater + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.GT, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        relationalExpression %= (relationalExpression + greaterEqual + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.GTE, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        relationalExpression %= (relationalExpression + isTerminal + identifier, (tokens, nodes) => new BinaryExpressionNode(nodes[0], Operator.IS, new IdentifierNode(tokens[0].Lex, tokens[0].Position), (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        relationalExpression %= (relationalExpression + asTerminal + identifier, (tokens, nodes) => new BinaryExpressionNode(nodes[0], Operator.AS, new IdentifierNode(tokens[0].Lex, tokens[0].Position), (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        relationalExpression %= (relationalExpression + less + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.LTE, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        relationalExpression %= (relationalExpression + lessEqual + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.LT, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        relationalExpression %= (relationalExpression + greater + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.GT, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        relationalExpression %= (relationalExpression + greaterEqual + concatExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.GTE, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        relationalExpression %= (relationalExpression + isTerminal + identifier, (tokens, nodes) => new BinaryExpressionNode(nodes[0], Operator.IS, new IdentifierNode(tokens[0].Lex, tokens[0].Position), (nodes[0].Position.Start, nodes[1].Position.End)));
+        relationalExpression %= (relationalExpression + asTerminal + identifier, (tokens, nodes) => new BinaryExpressionNode(nodes[0], Operator.AS, new IdentifierNode(tokens[0].Lex, tokens[0].Position), (nodes[0].Position.Start, nodes[1].Position.End)));
         relationalExpression %= (concatExpression, (_, nodes) => nodes[0]);
 
-        concatExpression %= (concatExpression + concat + aritmeticExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.CONCAT, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        concatExpression %= (concatExpression + doubleConcat + aritmeticExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.DCONCAT, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        concatExpression %= (concatExpression + concat + aritmeticExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.CONCAT, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        concatExpression %= (concatExpression + doubleConcat + aritmeticExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.DCONCAT, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         concatExpression %= (aritmeticExpression, (_, nodes) => nodes[0]);
 
-        aritmeticExpression %= (aritmeticExpression + plus + multExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.ADD, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        aritmeticExpression %= (aritmeticExpression + minus + multExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.SUB, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        aritmeticExpression %= (aritmeticExpression + plus + multExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.ADD, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        aritmeticExpression %= (aritmeticExpression + minus + multExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.SUB, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         aritmeticExpression %= (multExpression, (_, nodes) => nodes[0]);
 
-        multExpression %= (multExpression + times + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.MUL, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        multExpression %= (multExpression + divide + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.DIV, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
-        multExpression %= (multExpression + mod + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.MOD, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        multExpression %= (multExpression + times + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.MUL, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        multExpression %= (multExpression + divide + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.DIV, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
+        multExpression %= (multExpression + mod + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.MOD, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         multExpression %= (exponentialExpression, (_, nodes) => nodes[0]);
 
-        exponentialExpression %= (unaryExpression + power + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.POW, nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        exponentialExpression %= (unaryExpression + power + exponentialExpression, (_, nodes) => new BinaryExpressionNode(nodes[0], Operator.POW, nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
         exponentialExpression %= (unaryExpression, (_, nodes) => nodes[0]);
 
-        unaryExpression %= (plus + primaryExpression, (tokens, nodes) => new PositiveNode(nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
-        unaryExpression %= (minus + primaryExpression, (tokens, nodes) => new NegativeNode(nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
-        unaryExpression %= (notOperator + primaryExpression, (tokens, nodes) => new NotNode(nodes[0], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, nodes[0].Position.ColumnEnd)));
+        unaryExpression %= (plus + primaryExpression, (tokens, nodes) => new PositiveNode(nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
+        unaryExpression %= (minus + primaryExpression, (tokens, nodes) => new NegativeNode(nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
+        unaryExpression %= (notOperator + primaryExpression, (tokens, nodes) => new NotNode(nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
         unaryExpression %= (primaryExpression, (_, nodes) => nodes[0]);
 
         primaryExpression %= (literal, (_, nodes) => nodes[0]);
@@ -364,35 +363,35 @@ public static class HulkGrammar
         primaryExpression %= (openParenthesis + expression + closeParenthesis, (_, nodes) => nodes[0]);
         primaryExpression %= (instatiation, (_, nodes) => nodes[0]);
 
-        invocationExpression %= (identifier + openParenthesis + argumentList + closeParenthesis, (tokens, nodes) => new InvocationNode(tokens[0].Lex, ((ExpressionBlock)nodes[0]).Expressions, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[3].Position.ColumnEndNumber)));
-        invocationExpression %= (identifier + openParenthesis + closeParenthesis, (tokens, _) => new InvocationNode(tokens[0].Lex, [], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[2].Position.ColumnEndNumber)));
+        invocationExpression %= (identifier + openParenthesis + argumentList + closeParenthesis, (tokens, nodes) => new InvocationNode(tokens[0].Lex, ((ExpressionBlockNode)nodes[0]).Expressions, (tokens[0].Position.Start, tokens[3].Position.End)));
+        invocationExpression %= (identifier + openParenthesis + closeParenthesis, (tokens, _) => new InvocationNode(tokens[0].Lex, [], (tokens[0].Position.Start, tokens[2].Position.End)));
 
         argumentList %= (argumentList + comma + expression, (_, nodes) =>
         {
-            var expressionList = nodes[0] as ExpressionBlock ?? throw new Exception();
+            var expressionList = nodes[0] as ExpressionBlockNode ?? throw new Exception();
             expressionList.AppendExpression(nodes[1]);
             return expressionList;
         }
         );
-        argumentList %= (expression, (_, nodes) => new ExpressionBlock([nodes[0]], nodes[0].Position));
+        argumentList %= (expression, (_, nodes) => new ExpressionBlockNode([nodes[0]], nodes[0].Position));
 
-        vector %= (openBracket + vectorElement + closeBracket, (tokens, nodes) => new VectorNode(((ExpressionBlock)nodes[0]).Expressions, (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[1].Position.ColumnEndNumber)));
+        vector %= (openBracket + vectorElement + closeBracket, (tokens, nodes) => new VectorNode(((ExpressionBlockNode)nodes[0]).Expressions, (tokens[0].Position.Start, tokens[1].Position.End)));
 
         vectorElement %= (vectorElement + comma + expression, (_, nodes) =>
         {
-            var expressionList = nodes[0] as ExpressionBlock ?? throw new Exception();
+            var expressionList = nodes[0] as ExpressionBlockNode ?? throw new Exception();
             expressionList.AppendExpression(nodes[1]);
             return expressionList;
         }
         );
-        vectorElement %= (expression, (_, nodes) => new ExpressionBlock([nodes[0]], nodes[0].Position));
+        vectorElement %= (expression, (_, nodes) => new ExpressionBlockNode([nodes[0]], nodes[0].Position));
 
-        comprehensionVector %= (openBracket + expression + doublePipe + identifier + inTerminal + expression + closeBracket, (tokens, nodes) => new ComprehensionVectorNode(nodes[0], tokens[2].Lex, nodes[1], (tokens[0].Position.LineNumber, tokens[0].Position.ColumnStartNumber, tokens[5].Position.ColumnEndNumber)));
+        comprehensionVector %= (openBracket + expression + doublePipe + identifier + inTerminal + expression + closeBracket, (tokens, nodes) => new ComprehensionVectorNode(nodes[0], tokens[2].Lex, nodes[1], (tokens[0].Position.Start, tokens[5].Position.End)));
 
-        indexedValue %= (primaryExpression + openBracket + expression + closeBracket, (_, nodes) => new IndexNode(nodes[0], nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        indexedValue %= (primaryExpression + openBracket + expression + closeBracket, (_, nodes) => new IndexNode(nodes[0], nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
 
-        memberAccess %= (primaryExpression + dot + identifier, (tokens, nodes) => new AttributeCallNode(nodes[0], tokens[1].Lex, (nodes[0].Position.Line, nodes[0].Position.ColumnStart, tokens[1].Position.ColumnEndNumber)));
-        memberAccess %= (primaryExpression + dot + invocationExpression, (_, nodes) => new FunctionCallNode(nodes[0], nodes[1], (nodes[0].Position.Line, nodes[0].Position.ColumnStart, nodes[1].Position.ColumnEnd)));
+        memberAccess %= (primaryExpression + dot + identifier, (tokens, nodes) => new AttributeCallNode(nodes[0], tokens[1].Lex, (nodes[0].Position.Start, tokens[1].Position.End)));
+        memberAccess %= (primaryExpression + dot + invocationExpression, (_, nodes) => new FunctionCallNode(nodes[0], nodes[1], (nodes[0].Position.Start, nodes[1].Position.End)));
 
         instatiation %= (newTerminal + invocationExpression, (_, nodes) =>
         {

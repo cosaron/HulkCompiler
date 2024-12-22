@@ -3,10 +3,10 @@ namespace HulkCompiler.Parser;
 using System.Collections.Frozen;
 //Internal Imports
 using HulkCompiler.Parser.Grammar;
-using HulkCompiler.Lexer.TokenClass;
+using HulkCompiler.Lexer;
 
 //Alias
-using Grammar_ = HulkCompiler.Parser.Grammar.Grammar;
+using Grammar_ = Grammar.Grammar;
 using ActionTable = Dictionary<int, Dictionary<Grammar.Symbol, IParsingAction>>;
 using ParserTable = Dictionary<int, Dictionary<Grammar.Symbol, int>>;
 using HulkCompiler.Parser.Ast;

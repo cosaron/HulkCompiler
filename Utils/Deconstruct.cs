@@ -1,4 +1,4 @@
-namespace Utils;
+namespace HulkCompiler.Utils;
 public static class Extensions
 {
     public static void Deconstruct<T>(this T[] array, out T a)

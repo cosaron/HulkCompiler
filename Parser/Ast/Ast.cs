@@ -2,7 +2,7 @@ namespace HulkCompiler.Parser.Ast;
 
 
 using HulkCompiler.SemanticAnalizer;
-using NodePosition = (int Line, int ColumnStart, int ColumnEnd);
+using NodePosition = ((int Line, int Column) Start, (int Line, int Column) End);
 
 
 
@@ -30,7 +30,7 @@ public enum Operator
 
 
 
-public class AstNode(NodePosition position)
+public abstract class AstNode(NodePosition position)
 {
     public NodePosition Position { get; } = position;
 
@@ -38,9 +38,9 @@ public class AstNode(NodePosition position)
 public abstract class DefineStatement(NodePosition position) : AstNode(position);
 
 
-public class Program : AstNode
+public class ProgramNode : AstNode
 {
-    public Program(AstNode? definitions, AstNode statement, NodePosition position) : base(position)
+    public ProgramNode(AstNode? definitions, AstNode statement, NodePosition position) : base(position)
     {
         if (definitions is DefineStatementList _definitions)
             Definitions = _definitions.Statements;
@@ -66,7 +66,7 @@ public class Program : AstNode
 
 public class DefineStatementList : DefineStatement
 {
-    public DefineStatementList(AstNode[] statements) : base((-1, -1, -1))
+    public DefineStatementList(AstNode[] statements) : base(((-1, -1), (-1, -1)))
     {
         if (statements is DefineStatement[] _statements)
             Statements = _statements;
@@ -89,7 +89,7 @@ public class DefineStatementList : DefineStatement
     }
 }
 
-public class TypeDeclaration(string type) : DefineStatement((-1, -1, -1))
+public class TypeDeclaration(string type) : DefineStatement(((-1, -1), (-1, -1)))
 {
     public string Type { get; } = type;
 }
@@ -226,7 +226,7 @@ public class InheritsNode : DefineStatement
     {
         Identifier = identifier;
 
-        if (arguments is ExpressionBlock _arguments)
+        if (arguments is ExpressionBlockNode _arguments)
             Arguments = _arguments.Expressions;
         else if (arguments is null)
             Arguments = [];
@@ -284,7 +284,7 @@ public class TypeDefinitionNode : DefineStatement
             Parameters = _parameters;
         }
         else if (parameters is null)
-            Parameters = new ParameterListNode([], (-1, -1, -1));
+            Parameters = new ParameterListNode([], ((-1, -1), (-1, -1)));
         else
             throw new Exception();
     }
@@ -416,9 +416,9 @@ public class ParameterListNode : AstNode
     }
 }
 
-public class ExpressionBlock : Expression
+public class ExpressionBlockNode : Expression
 {
-    public ExpressionBlock(AstNode[] expressions, NodePosition position, Type? inferredType = null) : base(position, inferredType)
+    public ExpressionBlockNode(AstNode[] expressions, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (expressions is Expression[] _expressions)
             Expressions = _expressions;

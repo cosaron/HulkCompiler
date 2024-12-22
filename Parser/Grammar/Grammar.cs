@@ -3,7 +3,7 @@ namespace HulkCompiler.Parser.Grammar;
 using System.Collections;
 using System.Text;
 
-using HulkCompiler.Lexer.TokenClass;
+using HulkCompiler.Lexer;
 using HulkCompiler.Parser.Ast;
 
 

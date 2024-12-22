@@ -2,13 +2,12 @@ namespace HulkCompiler.Lexer;
 
 public class Token(string lex, TokenType type, int lineNumber = -1, int columnStartNumber = -1, int columnEndNumber = -1)
 {
-    private int LineNumber { get; } = lineNumber;
-    private int ColumnStartNumber { get; } = columnStartNumber;
-    private int ColumnEndNumber { get; } = columnEndNumber;
+    private (int LineNumber, int ColumnStartNumber) Start { get; } = (lineNumber, columnStartNumber);
+    private (int LineNumber, int ColumnEndNumber) End { get; } = (lineNumber, columnEndNumber);
 
     public string Lex { get; } = lex;
     public TokenType Type { get; } = type;
-    public (int LineNumber, int ColumnStartNumber, int ColumnEndNumber) Position => (LineNumber, ColumnStartNumber, ColumnEndNumber);
+    public ((int, int) Start, (int, int) End) Position => (Start, End);
 }
 
 public enum TokenType
