@@ -64,3 +64,41 @@ public static class Extensions
 
 
 }
+
+public static class Functions
+{
+    public static T[]? TopologicalSort<T>(Dictionary<T, List<T>> diGraph) where T : notnull
+    {
+        T[] sorted = new T[diGraph.Count];
+        Dictionary<T, int> inDegree = diGraph.Keys.ToDictionary(key => key, _ => 0);
+
+        foreach (var (node, edges) in diGraph)
+            foreach (var edge in edges)
+                inDegree[edge]++;
+
+        Queue<T> pendings = new();
+
+        foreach (var (node, degree) in inDegree)
+            if (degree == 0)
+                pendings.Enqueue(node);
+
+        int i = 0;
+
+        while (pendings.Count > 0)
+        {
+            T actualNode = pendings.Dequeue();
+            sorted[i++] = actualNode;
+            foreach (var node in diGraph[actualNode])
+            {
+                inDegree[node]--;
+                if (inDegree[node] == 0)
+                    pendings.Enqueue(node);
+            }
+        }
+
+        return i == diGraph.Count ? sorted : null;
+    }
+
+
+
+}
