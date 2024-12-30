@@ -84,6 +84,8 @@ public class Type(
     public Variable? GetAttribute(string name) => Attributes.Find(a => a.Name == name) ?? Parent?.GetAttribute(name);
     public void SetAttribute(Variable attribute) => Attributes.Add(attribute);
 
+    public void SetParent(Type parent) => Parent = parent;
+
     public bool Equals(Type? other) => other is not null && Name == other?.Name;
     public override bool Equals(object? obj) => obj is Type t && Equals(t);
     public override int GetHashCode() => Name.GetHashCode();
@@ -94,14 +96,15 @@ public class Type(
 public class Protocol(string name, params Method[] methods) : IEquatable<Protocol>
 {
     public string Name { get; private set; } = name;
-    private readonly Dictionary<string, Method> Methods = methods.ToDictionary(m => m.Name);
+    private readonly Dictionary<string, Method> _methods = methods.ToDictionary(m => m.Name);
 
-    public Method? GetMethod(string name) => Methods.GetValueOrDefault(name);
-    public void SetMethod(Method method) => Methods.TryAdd(method.Name, method);
+    public Method[] Methods => [.. _methods.Values];
+    public Method? GetMethod(string name) => _methods.GetValueOrDefault(name);
+    public void SetMethod(Method method) => _methods.TryAdd(method.Name, method);
 
     public bool IsImplementedBy(Type type)
     {
-        foreach (var method in Methods.Values)
+        foreach (var method in _methods.Values)
         {
             Method? typeMethod = type.GetMethod(method.Name);
             if (typeMethod is null) return false;
@@ -120,7 +123,7 @@ public class Protocol(string name, params Method[] methods) : IEquatable<Protoco
     public override bool Equals(object? obj) => obj is Protocol p && Equals(p);
     public override int GetHashCode() => Name.GetHashCode();
 
-    public override string ToString() => $"Protocol {Name}:: {string.Join(", ", Methods.Values)}";
+    public override string ToString() => $"Protocol {Name}:: {string.Join(", ", _methods.Values)}";
 
 }
 

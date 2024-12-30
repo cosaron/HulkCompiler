@@ -1,6 +1,6 @@
 namespace HulkCompiler.Parser.Ast;
 
-
+using System.Collections;
 using HulkCompiler.SemanticAnalizer;
 using NodePosition = ((int Line, int Column) Start, (int Line, int Column) End);
 
@@ -34,19 +34,21 @@ public abstract class AstNode(NodePosition position)
 {
     public NodePosition Position { get; } = position;
 
+    public void Collect(IAstTypeCollector collector, Context context, ErrorStack errorStack) => collector.Collect(this, context, errorStack);
+
 }
 public abstract class DefineStatement(NodePosition position) : AstNode(position);
 
 
 public class ProgramNode : AstNode
 {
-    public DefineStatement[] Definitions { get; }
+    public List<DefineStatement> Definitions { get; }
     public Expression Statement { get; }
 
     public ProgramNode(AstNode? definitions, AstNode statement, NodePosition position) : base(position)
     {
         if (definitions is DefineStatementList _definitions)
-            Definitions = [.. _definitions.Statements];
+            Definitions = _definitions.Statements;
         else if (definitions is null)
             Definitions = [];
         else
@@ -140,8 +142,8 @@ public class FunctionDefinitionNode : DefineStatement
 public class ProtocolDefinitionNode : DefineStatement
 {
     public string Identifier { get; }
-    public FunctionDefinitionNode[] Functions { get; }
-    public string[] Extends { get; private set; }
+    public List<FunctionDefinitionNode> Functions { get; }
+    public ExtendDeclarations? Extends { get; private set; }
 
     public ProtocolDefinitionNode(string identifier, AstNode? functions, NodePosition position, AstNode? extends) : base(position)
     {
@@ -149,25 +151,29 @@ public class ProtocolDefinitionNode : DefineStatement
 
         Extends = extends switch
         {
-            ExtendDeclarations _extends => [.. _extends.Extends],
-            null => [],
+            ExtendDeclarations _extends => _extends,
+            null => null,
             _ => throw new Exception(),
         };
 
         Functions = functions switch
         {
-            FunctionDefinitionList _functions => [.. _functions.Functions],
+            FunctionDefinitionList _functions => _functions.Functions,
             null => [],
             _ => throw new Exception(),
         };
     }
 }
 
-public class ExtendDeclarations(List<string> extends, NodePosition position) : AstNode(position)
+public class ExtendDeclarations(List<string> extends, NodePosition position) : AstNode(position), IEnumerable<string>
 {
     public List<string> Extends { get; private set; } = extends;
 
     public void AddExtend(string extend) => Extends.Add(extend);
+
+
+    public IEnumerator<string> GetEnumerator() => Extends.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 public class AttributeDefinitionNode : DefineStatement
@@ -214,7 +220,7 @@ public class AttributeDefinitionListNode : DefineStatement
 public class InheritsNode : DefineStatement
 {
     public string Identifier { get; }
-    public Expression[] Arguments { get; }
+    public List<Expression> Arguments { get; }
 
     public InheritsNode(string identifier, AstNode? arguments, NodePosition position) : base(position)
     {
@@ -222,7 +228,7 @@ public class InheritsNode : DefineStatement
 
         Arguments = arguments switch
         {
-            ExpressionBlockNode _arguments => [.. _arguments.Expressions],
+            ExpressionBlockNode _arguments => _arguments.Expressions,
             null => [],
             _ => throw new Exception(),
         };
@@ -384,7 +390,7 @@ public class ParameterNode(string identifier, NodePosition position, Type? infer
     public string? StaticType { get; } = staticType;
 }
 
-public class ParameterListNode : AstNode
+public class ParameterListNode : AstNode, IEnumerable<ParameterNode>
 {
     public List<ParameterNode> Parameters { get; private set; }
     public ParameterListNode(IEnumerable<AstNode> parameters, NodePosition position) : base(position)
@@ -402,6 +408,9 @@ public class ParameterListNode : AstNode
         else
             throw new Exception();
     }
+
+    public IEnumerator<ParameterNode> GetEnumerator() => Parameters.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 public class ExpressionBlockNode : Expression

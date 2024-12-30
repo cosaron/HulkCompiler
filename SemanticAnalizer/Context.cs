@@ -9,14 +9,14 @@ public class Context(Context? father)
     private List<Method> _methods = [];
     private Context? _father = father;
 
-    public Protocol IterableProtocol => GetProtocol("Iterable");
+    public Protocol IterableProtocol => GetProtocol("Iterable")!;
 
-    private bool ContainsType(string name) =>
+    public bool ContainsType(string name) =>
         _types.ContainsKey(name) || (_father?.ContainsType(name) ?? false);
-    public Type GetType(string name) =>
+    public Type? GetType(string name) =>
     _types.GetValueOrDefault(name)
     ?? _father?.GetType(name)
-    ?? throw new Exception($"Type {name} not found");
+    ?? null;
     public void DefineType(Type type)
     {
         if (ContainsType(type.Name))
@@ -26,12 +26,12 @@ public class Context(Context? father)
     }
 
 
-    private bool ContainsVariable(string name) =>
+    public bool ContainsVariable(string name) =>
         _variables.ContainsKey(name) || (_father?.ContainsVariable(name) ?? false);
-    public Variable GetVariable(string name) =>
+    public Variable? GetVariable(string name) =>
         _variables.GetValueOrDefault(name)
         ?? _father?.GetVariable(name)
-        ?? throw new Exception($"Variable {name} not found");
+        ?? null;
     public Type GetVariableType(string name) => GetVariable(name).Type;
     public void DefineVariable(Variable variable)
     {
@@ -41,12 +41,12 @@ public class Context(Context? father)
         _variables.Add(variable.Name, variable);
     }
 
-    private bool ContainsProtocol(string name) =>
+    public bool ContainsProtocol(string name) =>
         _protocols.ContainsKey(name) || (_father?.ContainsProtocol(name) ?? false);
-    public Protocol GetProtocol(string name) =>
+    public Protocol? GetProtocol(string name) =>
         _protocols.GetValueOrDefault(name)
         ?? _father?.GetProtocol(name)
-        ?? throw new Exception($"Protocol {name} not found");
+        ?? null;
     public void DefineProtocol(Protocol protocol)
     {
         if (ContainsProtocol(protocol.Name))
@@ -57,10 +57,10 @@ public class Context(Context? father)
 
     public bool ContainsMethod(string name) =>
         _methods.Any(m => m.Name == name) || (_father?.ContainsMethod(name) ?? false);
-    public Method GetMethod(string name, int paramsCount) =>
+    public Method? GetMethod(string name, int paramsCount) =>
         _methods.Find((m) => m.Name == name && m.Parameters.Count == paramsCount)
         ?? _father?.GetMethod(name, paramsCount)
-        ?? throw new Exception($"Method {name} with {paramsCount} parameters not found");
+        ?? null;
     public void DefineMethod(Method method)
     {
         if (ContainsMethod(method.Name))
