@@ -3,20 +3,20 @@ namespace HulkCompiler.SemanticAnalizer;
 
 public class Context(Context? father)
 {
-    private Dictionary<string, Type> _types = [];
-    private Dictionary<string, Variable> _variables = [];
-    private Dictionary<string, Protocol> _protocols = [];
-    private List<Method> _methods = [];
-    private Context? _father = father;
+    private readonly Dictionary<string, Type> _types = [];
+    private readonly Dictionary<string, Variable> _variables = [];
+    private readonly Dictionary<string, Protocol> _protocols = [];
+    private readonly List<Method> _methods = [];
+    private readonly Context? _father = father;
 
     public Protocol IterableProtocol => GetProtocol("Iterable")!;
 
     public bool ContainsType(string name) =>
         _types.ContainsKey(name) || (_father?.ContainsType(name) ?? false);
     public Type? GetType(string name) =>
-    _types.GetValueOrDefault(name)
-    ?? _father?.GetType(name)
-    ?? null;
+        _types.GetValueOrDefault(name)
+        ?? _father?.GetType(name)
+        ?? null;
     public void DefineType(Type type)
     {
         if (ContainsType(type.Name))
@@ -24,7 +24,8 @@ public class Context(Context? father)
 
         _types.Add(type.Name, type);
     }
-
+    public Type? GetTypeOrDefault(string? name) =>
+        name is null ? UnknownType.Instance : GetType(name);
 
     public bool ContainsVariable(string name) =>
         _variables.ContainsKey(name) || (_father?.ContainsVariable(name) ?? false);
@@ -32,7 +33,7 @@ public class Context(Context? father)
         _variables.GetValueOrDefault(name)
         ?? _father?.GetVariable(name)
         ?? null;
-    public Type GetVariableType(string name) => GetVariable(name).Type;
+    public Type? GetVariableType(string name) => GetVariable(name)?.Type ?? null;
     public void DefineVariable(Variable variable)
     {
         if (ContainsVariable(variable.Name))
@@ -73,10 +74,14 @@ public class Context(Context? father)
     public void DefineBuiltIns()
     {
         foreach (var protocol in HulkBuiltIn.Protocols)
-            DefineProtocol(protocol);
+            _protocols.Add(protocol.Name, protocol);
 
         foreach (var method in HulkBuiltIn.Methods)
-            DefineMethod(method);
+            _methods.Add(method);
+
+        foreach (var type in HulkBuiltIn.Types)
+            _types.Add(type.Name, type);
+
     }
 
     public Context CreateChildContext() => new(this);

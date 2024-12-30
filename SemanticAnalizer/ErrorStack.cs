@@ -18,6 +18,9 @@ public class ErrorStack
     public bool HasErrors => _errors.Count > 0;
     public void AddError(string message, (int line, int column) start, (int line, int column) end) =>
         _errors.Push(new SemanticError(message, start, end));
+    public void AddError(string message, ((int, int) start, (int, int) end) position) =>
+        _errors.Push(new SemanticError(message, position.start, position.end));
+
 
     public IEnumerable<SemanticError> GetErrors()
     {

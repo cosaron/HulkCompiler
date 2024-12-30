@@ -10,10 +10,7 @@ public interface IAstTypeCollector
     public void Collect(FunctionDefinitionNode node, Context context, ErrorStack errorStack);
     public void Collect(ProtocolDefinitionNode node, Context context, ErrorStack errorStack);
     public void Collect(AttributeDefinitionNode node, Context context, ErrorStack errorStack);
-    public void Collect(InheritsNode node, Context context, ErrorStack errorStack);
     public void Collect(TypeDefinitionNode node, Context context, ErrorStack errorStack);
-
-
 }
 
 
@@ -31,17 +28,17 @@ public class TypeCollector : IAstTypeCollector
         {
             if (definition is TypeDefinitionNode typeDefinition)
             {
-                if (types.ContainsKey(typeDefinition.Identifier))
+                if (types.ContainsKey(typeDefinition.Identifier.Value))
                     //TODO add error to the stack(type already defined)
                     throw new Exception();
-                types.Add(typeDefinition.Identifier, typeDefinition);
+                types.Add(typeDefinition.Identifier.Value, typeDefinition);
             }
             else if (definition is ProtocolDefinitionNode protocolDefinition)
             {
-                if (protocols.ContainsKey(protocolDefinition.Identifier))
+                if (protocols.ContainsKey(protocolDefinition.Identifier.Value))
                     //TODO add error to the stack(protocol already defined)
                     throw new Exception();
-                protocols.Add(protocolDefinition.Identifier, protocolDefinition);
+                protocols.Add(protocolDefinition.Identifier.Value, protocolDefinition);
             }
         }
 
@@ -51,7 +48,7 @@ public class TypeCollector : IAstTypeCollector
             {
                 if (typeDefinition.Inherits is not null)
                 {
-                    if (!types.TryGetValue(typeDefinition.Inherits.Identifier, out TypeDefinitionNode? inherits))
+                    if (!types.TryGetValue(typeDefinition.Inherits.Identifier.Value, out TypeDefinitionNode? inherits))
                         //TODO add error to the stack(type not found)
                         throw new Exception();
                     if (!inheritsRelations.TryGetValue(inherits, out List<TypeDefinitionNode>? relations))
@@ -64,7 +61,7 @@ public class TypeCollector : IAstTypeCollector
             {
                 foreach (var extend in protocolDefinition.Extends)
                 {
-                    if (!protocols.TryGetValue(extend, out ProtocolDefinitionNode? extends))
+                    if (!protocols.TryGetValue(extend.Value, out ProtocolDefinitionNode? extends))
                         //TODO add error to the stack(protocol not found)
                         throw new Exception();
                     if (!extendsRelations.TryGetValue(extends, out List<ProtocolDefinitionNode>? relations))
@@ -98,28 +95,19 @@ public class TypeCollector : IAstTypeCollector
 
     public void Collect(ProtocolDefinitionNode node, Context context, ErrorStack errorStack)
     {
-        if (context.ContainsProtocol(node.Identifier))
+        if (context.ContainsProtocol(node.Identifier.Value))
         {
             errorStack.AddError($"Protocol {node.Identifier} already defined", node.Position.Start, node.Position.End);
             return;
         }
-        Protocol newProtocol = new(node.Identifier);
+        Protocol newProtocol = new(node.Identifier.Value);
         if (node.Extends is not null)
         {
             foreach (var extendsIdentifier in node.Extends)
             {
-                Protocol? extendProtocol = context.GetProtocol(extendsIdentifier);
+                Protocol? extendProtocol = context.GetProtocol(extendsIdentifier.Value);
                 if (extendProtocol is not null)
                     errorStack.AddError($"Protocol {extendsIdentifier} is not defined", node.Extends.Position.Start, node.Extends.Position.End);
-
-                foreach (var method in extendProtocol!.Methods)
-                {
-                    if (newProtocol.GetMethod(method.Name) is not null)
-                        errorStack.AddError($"Protocol {newProtocol.Name} implements the method {method.Name} and extends from {extendProtocol.Name} which already defined it", node.Position.Start, node.Position.End);
-
-                    newProtocol.SetMethod(method);
-                }
-
             }
         }
 
@@ -128,14 +116,14 @@ public class TypeCollector : IAstTypeCollector
 
     public void Collect(TypeDefinitionNode node, Context context, ErrorStack errorStack)
     {
-        if (context.ContainsType(node.Identifier))
+        if (context.ContainsType(node.Identifier.Value))
             errorStack.AddError($"Type {node.Identifier} already defined", node.Position.Start, node.Position.End);
 
-        Type newType = new(node.Identifier);
+        Type newType = new(node.Identifier.Value);
 
         if (node.Inherits is not null)
         {
-            Type? parent = context.GetType(node.Inherits.Identifier);
+            Type? parent = context.GetType(node.Inherits.Identifier.Value);
             if (parent is null)
             {
                 errorStack.AddError($"Type {node.Inherits.Identifier} is not defined", node.Inherits.Position.Start, node.Inherits.Position.End);
@@ -170,12 +158,6 @@ public class TypeCollector : IAstTypeCollector
     public void Collect(FunctionDefinitionNode node, Context context, ErrorStack errorStack) { }
 
     public void Collect(AttributeDefinitionNode node, Context context, ErrorStack errorStack) { }
-
-    public void Collect(InheritsNode node, Context context, ErrorStack errorStack)
-    {
-        throw new NotImplementedException();
-    }
-
 }
 
 
@@ -185,22 +167,8 @@ public class TypeAttrCollector : IAstTypeCollector
     public void Collect(AstNode node, Context context, ErrorStack errorStack) { }
     public void Collect(ProgramNode node, Context context, ErrorStack errorStack)
     {
-        throw new NotImplementedException();
-    }
-
-    public void Collect(DefineStatementList node, Context context, ErrorStack errorStack)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Collect(TypeDeclaration node, Context context, ErrorStack errorStack)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Collect(FunctionDefinitionList node, Context context, ErrorStack errorStack)
-    {
-        throw new NotImplementedException();
+        foreach (var definition in node.Definitions)
+            definition.CollectAttr(this, context, errorStack);
     }
 
     public void Collect(FunctionDefinitionNode node, Context context, ErrorStack errorStack)
@@ -210,25 +178,26 @@ public class TypeAttrCollector : IAstTypeCollector
 
     public void Collect(ProtocolDefinitionNode node, Context context, ErrorStack errorStack)
     {
-        throw new NotImplementedException();
-    }
+        Protocol protocol = context.GetProtocol(node.Identifier.Value) ?? throw new Exception(); //TODO analize why this can posibly return null
+        foreach (var function in node.Functions)
+        {
+            if (protocol.GetMethod(function.Identifier.Value) is not null)
+            {
+                errorStack.AddError($"Function {function.Identifier} is already defined in protocol {protocol.Name}", function.Identifier.Position);
+                return;
+            }
 
-    public void Collect(ExtendDeclarations node, Context context, ErrorStack errorStack)
-    {
-        throw new NotImplementedException();
+            Type? returnType = context.GetTypeOrDefault(function.StaticReturnType?.Value);
+            if (returnType is null)
+            {
+                errorStack.AddError($"Type {function.StaticReturnType} is not defined", function.Position);
+                return;
+            }
+
+        }
     }
 
     public void Collect(AttributeDefinitionNode node, Context context, ErrorStack errorStack)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Collect(AttributeDefinitionListNode node, Context context, ErrorStack errorStack)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Collect(InheritsNode node, Context context, ErrorStack errorStack)
     {
         throw new NotImplementedException();
     }

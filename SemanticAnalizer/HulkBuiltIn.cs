@@ -53,4 +53,6 @@ public static class HulkBuiltIn
 
     public static Protocol[] Protocols => [Iterable];
     public static Method[] Methods => [Sqrt, Sin, Cos, Log, Exp, Rand, Print, Range];
+    public static Type[] Types => [ObjectType.Instance, NumberType.Instance, StringType.Instance, BooleanType.Instance, RangeType.Instance];
+
 }
