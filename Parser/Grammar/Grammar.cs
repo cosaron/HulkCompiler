@@ -344,6 +344,8 @@ public class Grammar
         return message.ToString();
     }
 
+    public override int GetHashCode() => ToString().GetHashCode();
+
 }
 
 
