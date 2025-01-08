@@ -182,9 +182,9 @@ public class AttributeDefinitionNode : DefineStatement
 {
     public IdentifierNode Identifier { get; }
     public Expression Value { get; }
-    public string? StaticType { get; }
+    public TypeDeclarationNode? StaticType { get; }
 
-    public AttributeDefinitionNode(IdentifierNode identifier, AstNode value, NodePosition position, string? staticType = null) : base(position)
+    public AttributeDefinitionNode(IdentifierNode identifier, AstNode value, NodePosition position, TypeDeclarationNode? staticType = null) : base(position)
     {
         if (value is Expression _value)
         {

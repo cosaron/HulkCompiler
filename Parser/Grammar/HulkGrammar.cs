@@ -102,7 +102,7 @@ public static class HulkGrammar
         );
         typeFunctions %= (functionDefinition, (_, nodes) => new FunctionDefinitionList([nodes[0]], nodes[0].Position));
 
-        attributeDefinition %= (identifier + typeDeclaration + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, tokens[2].Position.End), tokens[1].Lex));
+        attributeDefinition %= (identifier + typeDeclaration + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, tokens[2].Position.End), new TypeDeclarationNode(tokens[1].Lex, tokens[1].Position)));
         attributeDefinition %= (identifier + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, tokens[2].Position.End)));
 
         typeArguments %= (openParenthesis + argumentListDefinition + closeParenthesis, (_, nodes) => nodes[0]);
