@@ -2,6 +2,7 @@ namespace HulkCompiler.Parser.Ast;
 
 using System.Collections;
 using HulkCompiler.SemanticAnalizer;
+using HulkCompiler.Transpiler;
 using NodePosition = ((int Line, int Column) Start, (int Line, int Column) End);
 
 
@@ -36,6 +37,9 @@ public abstract class AstNode(NodePosition position)
 
     public void Collect(IAstTypeCollector collector, Context context, ErrorStack errorStack) => collector.Collect(this, context, errorStack);
     public void CollectAttr(IAstTypeCollector collector, Context context, ErrorStack errorStack) => collector.Collect(this, context, errorStack);
+    public void Infer(IAstTypeInferer inferer, Context context, ErrorStack errorStack) => inferer.Infer(this, context, errorStack);
+
+    public void Transpile(IHulkTranspiler transpiler, Context context, ErrorStack errorStack) => transpiler.Transpile(this, context, errorStack);
 
 
 }
@@ -608,16 +612,25 @@ public class VariableDeclarationListNode : DefineStatement
 
 public class LetNode : Expression
 {
-    public VariableDeclarationNode[] Declarations { get; }
-    public Expression Body { get; }
+    public List<VariableDeclarationNode> Declarations { get; set; }
+    public Expression Body { get; set; }
 
     public LetNode(AstNode declarations, AstNode body, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
         if (declarations is VariableDeclarationListNode _declarations && body is Expression _body)
         {
-            Declarations = [.. _declarations.Declarations];
+            Declarations = _declarations.Declarations;
             Body = _body;
         }
+        else
+            throw new Exception();
+    }
+
+    public LetNode(List<VariableDeclarationNode> declarations, AstNode body, NodePosition position, Type? inferredType = null) : base(position, inferredType)
+    {
+        Declarations = declarations;
+        if (body is Expression _body)
+            Body = _body;
         else
             throw new Exception();
     }
