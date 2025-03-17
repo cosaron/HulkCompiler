@@ -39,67 +39,143 @@ namespace HulkCompiler.SemanticAnalizer
 
         public void Infer(ProgramNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            foreach (var definition in node.Definitions)
+                definition.Infer(this, context, errorStack);
+
+            node.Statement.Infer(this, context, errorStack);
         }
 
         public void Infer(TypeDefinitionNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            Type type = context.GetType(node.Identifier.Value) ?? throw new Exception("Type not found wtf");
+            Context constructorContext = context.CreateChildContext();
+            Context typeContext = context.CreateChildContext();
+
+            foreach (var parameter in node.Parameters)
+                constructorContext.DefineVariable(new Variable(parameter.Identifier.Value, UnknownType.Instance));
+
+            node.Inherits?.Infer(this, constructorContext, errorStack);
+
+            foreach (var attribute in node.Attributes)
+                attribute.Infer(this, typeContext, errorStack);
+
+
+            foreach (var function in node.Functions)
+            {
+                Context functionContext = typeContext.CreateChildContext();
+                Method? parentMethod = type.Parent?.GetMethod(function.Identifier.Value);
+                if (parentMethod is not null)
+                {
+                    functionContext.DefineMethod(new Method("base", parentMethod.ReturnType, [.. parentMethod.Parameters]));
+                }
+                function.Infer(this, functionContext, errorStack);
+            }
         }
 
-        public void Infer(ProtocolDefinitionNode node, Context context, ErrorStack errorStack)
-        {
-            throw new NotImplementedException();
-        }
+        public void Infer(ProtocolDefinitionNode node, Context context, ErrorStack errorStack) { }
 
         public void Infer(FunctionDefinitionNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            Context functionContext = context.CreateChildContext();
+
+            Method method = context.GetMethod(node.Identifier.Value, node.Parameters.Count) ?? throw new Exception("Method not found wtf");
+
+            foreach (var parameter in method.Parameters)
+            {
+                functionContext.DefineVariable(parameter);
+            }
+
+            // Here the body of the function can't be null by parser check
+            node.Body!.Infer(this, functionContext, errorStack);
+
+            if (node.Body.InferredType!.ConformsTo(method.ReturnType))
+            {
+                method.ReturnType = node.Body.InferredType;
+                node.InferredReturnType = node.Body.InferredType;
+            }
+
+            //TODO in bottom up inference update the param
+
         }
 
         public void Infer(AttributeDefinitionNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            node.Value.Infer(this, context, errorStack);
         }
 
         public void Infer(InheritsNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            foreach (var argument in node.Arguments)
+                argument.Infer(this, context, errorStack);
         }
 
         public void Infer(ForNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            node.Iterable.Infer(this, context, errorStack);
+
+            Type? iterableType = null;
+
+            if (context.IterableProtocol.IsImplementedBy(node.Iterable.InferredType ?? UnknownType.Instance))
+            {
+                iterableType = node.Iterable.InferredType?.GetMethod("current")?.ReturnType;
+            }
+
+            Context forContext = context.CreateChildContext();
+            forContext.DefineVariable(new Variable(node.IndexIdentifier.Value, iterableType ?? UnknownType.Instance));
+            node.Body.Infer(this, forContext, errorStack);
+
+            node.InferredType = node.Body.InferredType;
         }
 
         public void Infer(WhileNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            node.Condition.Infer(this, context, errorStack);
+            node.Body.Infer(this, context, errorStack);
+
+            node.InferredType = node.Body.InferredType;
         }
 
         public void Infer(IfNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            node.Condition.Infer(this, context, errorStack);
+            node.Body.Infer(this, context, errorStack);
+
+            foreach (var elif in node.ElifClauses)
+                elif.Infer(this, context, errorStack);
+
+            node.ElseBody?.Infer(this, context, errorStack);
         }
 
         public void Infer(ElifNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            node.Condition.Infer(this, context, errorStack);
+            node.Body.Infer(this, context, errorStack);
+
+            node.InferredType = node.Body.InferredType;
         }
 
         public void Infer(ExpressionBlockNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            foreach (var expression in node.Expressions)
+                expression.Infer(this, context, errorStack);
+
+            node.InferredType = node.Expressions[^1].InferredType;
         }
 
         public void Infer(VariableDeclarationNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException("The variable declaration node is not supported for inference");
         }
 
         public void Infer(LetNode node, Context context, ErrorStack errorStack)
         {
-            throw new NotImplementedException();
+            Context letContext = context.CreateChildContext();
+            foreach (var declaration in node.Declarations)
+            {
+                declaration.Value.Infer(this, letContext, errorStack);
+                letContext.DefineVariable(new Variable(declaration.Identifier.Value, declaration.Value.InferredType ?? UnknownType.Instance));
+            }
+            node.Body.Infer(this, letContext, errorStack);
         }
 
         public void Infer(DestructiveAssignmentNode node, Context context, ErrorStack errorStack)

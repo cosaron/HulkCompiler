@@ -92,6 +92,11 @@ public class DefineStatementList : DefineStatement
     public void Extend(IEnumerable<DefineStatement> list) => Statements.AddRange(list);
 }
 
+public class IdentifierDefinition(string identifier, NodePosition position) : DefineStatement(position)
+{
+    public string Value { get; } = identifier;
+}
+
 public class TypeDeclarationNode(string type, NodePosition position) : DefineStatement(position)
 {
     public string Value { get; } = type;
@@ -120,18 +125,20 @@ public class FunctionDefinitionList : DefineStatement
 }
 public class FunctionDefinitionNode : DefineStatement
 {
-    public IdentifierNode Identifier { get; }
+    public IdentifierDefinition Identifier { get; }
     public List<ParameterNode> Parameters { get; }
     public Expression? Body { get; }
     public TypeDeclarationNode? StaticReturnType { get; }
+    public Type? InferredReturnType { get; set; }
 
-    public FunctionDefinitionNode(IdentifierNode identifier, AstNode? body, AstNode? parameters, NodePosition position, TypeDeclarationNode? staticReturnType = null) : base(position)
+    public FunctionDefinitionNode(IdentifierDefinition identifier, AstNode? body, AstNode? parameters, NodePosition position, TypeDeclarationNode? staticReturnType = null, Type? inferedReturnType = null) : base(position)
     {
         if (body is Expression _body)
         {
             Identifier = identifier;
             Body = _body;
             StaticReturnType = staticReturnType;
+            InferredReturnType = inferedReturnType;
 
             Parameters = parameters switch
             {
@@ -147,11 +154,11 @@ public class FunctionDefinitionNode : DefineStatement
 
 public class ProtocolDefinitionNode : DefineStatement
 {
-    public IdentifierNode Identifier { get; }
+    public IdentifierDefinition Identifier { get; }
     public List<FunctionDefinitionNode> Functions { get; }
     public ExtendDeclarations? Extends { get; private set; }
 
-    public ProtocolDefinitionNode(IdentifierNode identifier, AstNode? functions, NodePosition position, AstNode? extends) : base(position)
+    public ProtocolDefinitionNode(IdentifierDefinition identifier, AstNode? functions, NodePosition position, AstNode? extends) : base(position)
     {
         Identifier = identifier;
 
@@ -171,24 +178,24 @@ public class ProtocolDefinitionNode : DefineStatement
     }
 }
 
-public class ExtendDeclarations(List<IdentifierNode> extends, NodePosition position) : AstNode(position), IEnumerable<IdentifierNode>
+public class ExtendDeclarations(List<IdentifierDefinition> extends, NodePosition position) : AstNode(position), IEnumerable<IdentifierDefinition>
 {
-    public List<IdentifierNode> Extends { get; private set; } = extends;
+    public List<IdentifierDefinition> Extends { get; private set; } = extends;
 
-    public void AddExtend(IdentifierNode extend) => Extends.Add(extend);
+    public void AddExtend(IdentifierDefinition extend) => Extends.Add(extend);
 
 
-    public IEnumerator<IdentifierNode> GetEnumerator() => Extends.GetEnumerator();
+    public IEnumerator<IdentifierDefinition> GetEnumerator() => Extends.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 public class AttributeDefinitionNode : DefineStatement
 {
-    public IdentifierNode Identifier { get; }
+    public IdentifierDefinition Identifier { get; }
     public Expression Value { get; }
     public TypeDeclarationNode? StaticType { get; }
 
-    public AttributeDefinitionNode(IdentifierNode identifier, AstNode value, NodePosition position, TypeDeclarationNode? staticType = null) : base(position)
+    public AttributeDefinitionNode(IdentifierDefinition identifier, AstNode value, NodePosition position, TypeDeclarationNode? staticType = null) : base(position)
     {
         if (value is Expression _value)
         {
@@ -225,10 +232,10 @@ public class AttributeDefinitionListNode : DefineStatement
 
 public class InheritsNode : DefineStatement
 {
-    public IdentifierNode Identifier { get; }
+    public IdentifierDefinition Identifier { get; }
     public List<Expression> Arguments { get; }
 
-    public InheritsNode(IdentifierNode identifier, AstNode? arguments, NodePosition position) : base(position)
+    public InheritsNode(IdentifierDefinition identifier, AstNode? arguments, NodePosition position) : base(position)
     {
         Identifier = identifier;
 
@@ -243,13 +250,13 @@ public class InheritsNode : DefineStatement
 
 public class TypeDefinitionNode : DefineStatement
 {
-    public IdentifierNode Identifier { get; }
+    public IdentifierDefinition Identifier { get; }
     public ParameterListNode Parameters { get; }
     public AttributeDefinitionNode[] Attributes { get; }
     public FunctionDefinitionNode[] Functions { get; }
     public InheritsNode? Inherits { get; }
 
-    public TypeDefinitionNode(IdentifierNode identifier, AstNode? parameters, AstNode? definitions, NodePosition position, AstNode? inherits = null) : base(position)
+    public TypeDefinitionNode(IdentifierDefinition identifier, AstNode? parameters, AstNode? definitions, NodePosition position, AstNode? inherits = null) : base(position)
     {
         Identifier = identifier;
 
@@ -297,6 +304,54 @@ public class TypeDefinitionNode : DefineStatement
         };
     }
 }
+
+public class ParameterNode : DefineStatement
+{
+    public IdentifierDefinition Identifier { get; }
+    public TypeDeclarationNode? StaticType { get; }
+
+    public ParameterNode(AstNode identifier, NodePosition position, AstNode? staticType = null) : base(position)
+    {
+        if (identifier is IdentifierDefinition _identifier)
+        {
+            Identifier = _identifier;
+            if (staticType is TypeDeclarationNode _staticType)
+                StaticType = _staticType;
+            else if (staticType is null)
+                StaticType = null;
+            else
+                throw new Exception();
+
+        }
+        else
+            throw new Exception();
+    }
+}
+
+public class ParameterListNode : AstNode, IEnumerable<ParameterNode>
+{
+    public List<ParameterNode> Parameters { get; private set; }
+    public ParameterListNode(IEnumerable<AstNode> parameters, NodePosition position) : base(position)
+    {
+        if (parameters is IEnumerable<ParameterNode> _parameters)
+            Parameters = [.. _parameters];
+        else
+            throw new Exception();
+    }
+
+    public void AppendParameter(AstNode expression)
+    {
+        if (expression is ParameterNode _parameter)
+            Parameters.Add(_parameter);
+        else
+            throw new Exception();
+    }
+
+    public IEnumerator<ParameterNode> GetEnumerator() => Parameters.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+
 
 
 public abstract class Expression(NodePosition position, Type? inferredType) : AstNode(position)
@@ -392,52 +447,6 @@ public class IdentifierNode(string identifier, NodePosition position, Type? infe
 
 }
 
-public class ParameterNode : Expression
-{
-    public IdentifierNode Identifier { get; }
-    public TypeDeclarationNode? StaticType { get; }
-
-    public ParameterNode(AstNode identifier, NodePosition position, Type? inferredType = null, AstNode? staticType = null) : base(position, inferredType)
-    {
-        if (identifier is IdentifierNode _identifier)
-        {
-            Identifier = _identifier;
-            if (staticType is TypeDeclarationNode _staticType)
-                StaticType = _staticType;
-            else if (staticType is null)
-                StaticType = null;
-            else
-                throw new Exception();
-
-        }
-        else
-            throw new Exception();
-    }
-}
-
-public class ParameterListNode : AstNode, IEnumerable<ParameterNode>
-{
-    public List<ParameterNode> Parameters { get; private set; }
-    public ParameterListNode(IEnumerable<AstNode> parameters, NodePosition position) : base(position)
-    {
-        if (parameters is IEnumerable<ParameterNode> _parameters)
-            Parameters = [.. _parameters];
-        else
-            throw new Exception();
-    }
-
-    public void AppendParameter(AstNode expression)
-    {
-        if (expression is ParameterNode _parameter)
-            Parameters.Add(_parameter);
-        else
-            throw new Exception();
-    }
-
-    public IEnumerator<ParameterNode> GetEnumerator() => Parameters.GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
-
 public class ExpressionBlockNode : Expression
 {
     public List<Expression> Expressions { get; private set; }
@@ -459,19 +468,17 @@ public class ExpressionBlockNode : Expression
 }
 public class ForNode : Expression
 {
-    public IdentifierNode IndexIdentifier { get; }
+    public IdentifierDefinition IndexIdentifier { get; }
     public Expression Iterable { get; }
     public Expression Body { get; }
-    public Type? IterableType { get; set; }
 
-    public ForNode(AstNode indexIdentifier, AstNode iterable, AstNode body, NodePosition position, Type? inferredType = null, Type? indexType = null) : base(position, inferredType)
+    public ForNode(AstNode indexIdentifier, AstNode iterable, AstNode body, NodePosition position, Type? inferredType = null) : base(position, inferredType)
     {
-        if (indexIdentifier is IdentifierNode _identifier && iterable is Expression _iterable && body is Expression _body)
+        if (indexIdentifier is IdentifierDefinition _identifier && iterable is Expression _iterable && body is Expression _body)
         {
             IndexIdentifier = _identifier;
             Iterable = _iterable;
             Body = _body;
-            IterableType = indexType;
         }
         else
             throw new Exception();
@@ -573,13 +580,13 @@ public class ElifNode : Expression
 
 public class VariableDeclarationNode : DefineStatement
 {
-    public IdentifierNode Identifier { get; }
+    public IdentifierDefinition Identifier { get; }
     public Expression Value { get; }
     public TypeDeclarationNode? StaticType { get; }
 
     public VariableDeclarationNode(AstNode identifier, AstNode value, NodePosition position, TypeDeclarationNode? staticType = null) : base(position)
     {
-        if (identifier is IdentifierNode _identifier && value is Expression _value)
+        if (identifier is IdentifierDefinition _identifier && value is Expression _value)
         {
             Identifier = _identifier;
             Value = _value;

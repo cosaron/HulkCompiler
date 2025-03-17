@@ -19,7 +19,7 @@ public class Variable(string name, Type type) : IEquatable<Variable>
 public class Method(string name, Type returnType, params Variable[] parameters) : IEquatable<Method>
 {
     public string Name { get; private set; } = name;
-    public Type ReturnType { get; private set; } = returnType;
+    public Type ReturnType { get; set; } = returnType;
     public readonly List<Variable> Parameters = [.. parameters];
 
 

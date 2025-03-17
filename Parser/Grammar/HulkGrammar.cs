@@ -53,14 +53,14 @@ public static class HulkGrammar
         defineStatement %= (typeDefinition, (_, nodes) => nodes[0]);
         defineStatement %= (protocolDefinition, (_, nodes) => nodes[0]);
 
-        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], nodes[2], (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
-        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
-        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
-        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End)));
-        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), null, nodes[1], (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
-        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), null, null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
-        typeDefinition %= (typeTerminal + identifier + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), null, nodes[0], (tokens[0].Position.Start, tokens[3].Position.End)));
-        typeDefinition %= (typeTerminal + identifier + openBrace + closeBrace, (tokens, _) => new TypeDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), null, null, (tokens[0].Position.Start, tokens[3].Position.End)));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], nodes[2], (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        typeDefinition %= (typeTerminal + identifier + typeArguments + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], null, (tokens[0].Position.Start, tokens[3].Position.End)));
+        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), null, nodes[1], (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        typeDefinition %= (typeTerminal + identifier + typeInherits + openBrace + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), null, null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        typeDefinition %= (typeTerminal + identifier + openBrace + typeBody + closeBrace, (tokens, nodes) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), null, nodes[0], (tokens[0].Position.Start, tokens[3].Position.End)));
+        typeDefinition %= (typeTerminal + identifier + openBrace + closeBrace, (tokens, _) => new TypeDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), null, null, (tokens[0].Position.Start, tokens[3].Position.End)));
 
         typeBody %= (typeAttributes + typeFunctions, (_, nodes) =>
         {
@@ -102,13 +102,13 @@ public static class HulkGrammar
         );
         typeFunctions %= (functionDefinition, (_, nodes) => new FunctionDefinitionList([nodes[0]], nodes[0].Position));
 
-        attributeDefinition %= (identifier + typeDeclaration + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, tokens[2].Position.End), new TypeDeclarationNode(tokens[1].Lex, tokens[1].Position)));
-        attributeDefinition %= (identifier + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, tokens[2].Position.End)));
+        attributeDefinition %= (identifier + typeDeclaration + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, tokens[2].Position.End), new TypeDeclarationNode(tokens[1].Lex, tokens[1].Position)));
+        attributeDefinition %= (identifier + assignmentTerminal + expression + semicolon, (tokens, nodes) => new AttributeDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, tokens[2].Position.End)));
 
         typeArguments %= (openParenthesis + argumentListDefinition + closeParenthesis, (_, nodes) => nodes[0]);
 
-        typeInherits %= (inheritsTerminal + identifier + inheritsDeclaration, (tokens, nodes) => new InheritsNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
-        typeInherits %= (inheritsTerminal + identifier, (tokens, _) => new InheritsNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), null, (tokens[0].Position.Start, tokens[1].Position.End)));
+        typeInherits %= (inheritsTerminal + identifier + inheritsDeclaration, (tokens, nodes) => new InheritsNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
+        typeInherits %= (inheritsTerminal + identifier, (tokens, _) => new InheritsNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), null, (tokens[0].Position.Start, tokens[1].Position.End)));
 
         typeDeclaration %= (colon + identifier, (tokens, _) => new TypeDeclarationNode(tokens[0].Lex, tokens[0].Position));
         typeDeclaration %= (colon + numberTypeDeclaration, (tokens, _) => new TypeDeclarationNode(tokens[0].Lex, tokens[0].Position));
@@ -121,15 +121,15 @@ public static class HulkGrammar
         functionDefinition %= (inlineFunction, (_, nodes) => nodes[0]);
         functionDefinition %= (blockFunction, (_, nodes) => nodes[0]);
 
-        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], position: (tokens[0].Position.Start, nodes[1].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
-        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End)));
-        inlineFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], null, position: (tokens[0].Position.Start, nodes[1].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
-        inlineFunction %= (identifier + openParenthesis + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], null, (tokens[0].Position.Start, nodes[0].Position.End)));
+        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], position: (tokens[0].Position.Start, nodes[1].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
+        inlineFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End)));
+        inlineFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[0], null, position: (tokens[0].Position.Start, nodes[1].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
+        inlineFunction %= (identifier + openParenthesis + closeParenthesis + inline + statement, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[0], null, (tokens[0].Position.Start, nodes[0].Position.End)));
 
-        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], position: (tokens[0].Position.Start, nodes[1].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
-        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End)));
-        blockFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], null, position: (tokens[0].Position.Start, nodes[0].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
-        blockFunction %= (identifier + openParenthesis + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), nodes[0], null, (tokens[0].Position.Start, nodes[0].Position.End)));
+        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], position: (tokens[0].Position.Start, nodes[1].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
+        blockFunction %= (identifier + openParenthesis + argumentListDefinition + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[1], nodes[0], (tokens[0].Position.Start, nodes[1].Position.End)));
+        blockFunction %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[0], null, position: (tokens[0].Position.Start, nodes[0].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
+        blockFunction %= (identifier + openParenthesis + closeParenthesis + expressionBlock, (tokens, nodes) => new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), nodes[0], null, (tokens[0].Position.Start, nodes[0].Position.End)));
 
         argumentListDefinition %= (argumentListDefinition + comma + identifier + typeDeclaration, (tokens, nodes) =>
         {
@@ -148,63 +148,63 @@ public static class HulkGrammar
         argumentListDefinition %= (identifier + typeDeclaration, (tokens, _) => new ParameterListNode([new ParameterNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), tokens[0].Position, staticType: new TypeDeclarationNode(tokens[1].Lex, tokens[1].Position))], tokens[0].Position));
         argumentListDefinition %= (identifier, (tokens, _) => new ParameterListNode([new ParameterNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), tokens[0].Position)], tokens[0].Position));
 
-        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
-        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
-        protocolDefinition %= (protocolTerminal + identifier + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, tokens[3].Position.End), null));
-        protocolDefinition %= (protocolTerminal + identifier + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), null, (tokens[0].Position.Start, tokens[3].Position.End), null));
+        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, tokens[3].Position.End), nodes[1]));
+        protocolDefinition %= (protocolTerminal + identifier + extendsDefinition + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), null, (tokens[0].Position.Start, tokens[3].Position.End), nodes[0]));
+        protocolDefinition %= (protocolTerminal + identifier + openBrace + protocolBody + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, tokens[3].Position.End), null));
+        protocolDefinition %= (protocolTerminal + identifier + openBrace + closeBrace, (tokens, nodes) => new ProtocolDefinitionNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), null, (tokens[0].Position.Start, tokens[3].Position.End), null));
 
         extendsDefinition %= (extendsTerminal + identifier + extendsMultipleIdentifier, (tokens, nodes) =>
         {
             var extendsDeclaration = nodes[0] as ExtendDeclarations ?? throw new Exception();
-            extendsDeclaration.AddExtend(new IdentifierNode(tokens[0].Lex, tokens[0].Position));
+            extendsDeclaration.AddExtend(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position));
             return extendsDeclaration;
         }
         );
-        extendsDefinition %= (extendsTerminal + identifier, (tokens, _) => new ExtendDeclarations([new IdentifierNode(tokens[0].Lex, tokens[0].Position)], tokens[0].Position));
+        extendsDefinition %= (extendsTerminal + identifier, (tokens, _) => new ExtendDeclarations([new IdentifierDefinition(tokens[0].Lex, tokens[0].Position)], tokens[0].Position));
 
         extendsMultipleIdentifier %= (comma + identifier + extendsMultipleIdentifier, (tokens, nodes) =>
         {
             var extendsDeclaration = nodes[0] as ExtendDeclarations ?? throw new Exception();
-            extendsDeclaration.AddExtend(new IdentifierNode(tokens[0].Lex, tokens[0].Position));
+            extendsDeclaration.AddExtend(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position));
             return extendsDeclaration;
         }
         );
-        extendsMultipleIdentifier %= (comma + identifier, (tokens, _) => new ExtendDeclarations([new IdentifierNode(tokens[0].Lex, tokens[0].Position)], tokens[0].Position));
+        extendsMultipleIdentifier %= (comma + identifier, (tokens, _) => new ExtendDeclarations([new IdentifierDefinition(tokens[0].Lex, tokens[0].Position)], tokens[0].Position));
 
         protocolBody %= (protocolBody + identifier + openParenthesis + protocolArgumentsDefinition + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) =>
         {
             var functionList = nodes[0] as FunctionDefinitionList ?? throw new Exception();
-            functionList.AppendFunction(new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), null, nodes[1], position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
+            functionList.AppendFunction(new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), null, nodes[1], position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
             return functionList;
         }
         );
         protocolBody %= (protocolBody + identifier + openParenthesis + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) =>
         {
             var functionList = nodes[0] as FunctionDefinitionList ?? throw new Exception();
-            functionList.AppendFunction(new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), null, null, position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
+            functionList.AppendFunction(new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), null, null, position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position)));
             return functionList;
         }
         );
-        protocolBody %= (identifier + openParenthesis + protocolArgumentsDefinition + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), null, nodes[0], position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position))], position: (tokens[0].Position.Start, tokens[3].Position.End)));
-        protocolBody %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), null, null, position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position))], position: (tokens[0].Position.Start, tokens[3].Position.End)));
+        protocolBody %= (identifier + openParenthesis + protocolArgumentsDefinition + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), null, nodes[0], position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position))], position: (tokens[0].Position.Start, tokens[3].Position.End)));
+        protocolBody %= (identifier + openParenthesis + closeParenthesis + typeDeclaration + semicolon, (tokens, nodes) => new FunctionDefinitionList([new FunctionDefinitionNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), null, null, position: (tokens[0].Position.Start, tokens[3].Position.End), staticReturnType: new TypeDeclarationNode(tokens[3].Lex, tokens[3].Position))], position: (tokens[0].Position.Start, tokens[3].Position.End)));
 
         protocolArgumentsDefinition %= (identifier + typeDeclaration + protocolMultipleArgumentsDefinition, (tokens, nodes) =>
         {
             var parameters = nodes[0] as ParameterListNode ?? throw new Exception();
-            parameters.AppendParameter(new ParameterNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), tokens[0].Position, staticType: new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)));
+            parameters.AppendParameter(new ParameterNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), tokens[0].Position, staticType: new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)));
             return parameters;
         }
         );
-        protocolArgumentsDefinition %= (identifier + typeDeclaration, (tokens, _) => new ParameterListNode([new ParameterNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), tokens[0].Position, staticType: new TypeDeclarationNode(tokens[1].Lex, tokens[1].Position))], tokens[0].Position));
+        protocolArgumentsDefinition %= (identifier + typeDeclaration, (tokens, _) => new ParameterListNode([new ParameterNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), tokens[0].Position, staticType: new TypeDeclarationNode(tokens[1].Lex, tokens[1].Position))], tokens[0].Position));
 
         protocolMultipleArgumentsDefinition %= (comma + identifier + typeDeclaration + protocolMultipleArgumentsDefinition, (tokens, nodes) =>
         {
             var parameters = nodes[0] as ParameterListNode ?? throw new Exception();
-            parameters.AppendParameter(new ParameterNode(new IdentifierNode(tokens[0].Lex, tokens[0].Position), tokens[0].Position, staticType: new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)));
+            parameters.AppendParameter(new ParameterNode(new IdentifierDefinition(tokens[0].Lex, tokens[0].Position), tokens[0].Position, staticType: new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)));
             return parameters;
         }
         );
-        protocolMultipleArgumentsDefinition %= (comma + identifier + typeDeclaration, (tokens, _) => new ParameterListNode([new ParameterNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), tokens[1].Position, staticType: new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position))], tokens[1].Position));
+        protocolMultipleArgumentsDefinition %= (comma + identifier + typeDeclaration, (tokens, _) => new ParameterListNode([new ParameterNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), tokens[1].Position, staticType: new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position))], tokens[1].Position));
 
         expressionBlock %= (openBrace + statementList + closeBrace, (_, nodes) => nodes[0]);
 
@@ -262,8 +262,8 @@ public static class HulkGrammar
 
         whileHeader %= (whileTerminal + openParenthesis + expression + closeParenthesis, (_, nodes) => nodes[0]);
 
-        forHeader %= (forTerminal + openParenthesis + identifier + typeDeclaration + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(new IdentifierNode(tokens[2].Lex, tokens[2].Position), nodes[0], (tokens[0].Position.Start, tokens[5].Position.End), new TypeDeclarationNode(tokens[4].Lex, tokens[4].Position)));
-        forHeader %= (forTerminal + openParenthesis + identifier + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(new IdentifierNode(tokens[2].Lex, tokens[2].Position), nodes[0], (tokens[0].Position.Start, tokens[4].Position.End)));
+        forHeader %= (forTerminal + openParenthesis + identifier + typeDeclaration + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(new IdentifierDefinition(tokens[2].Lex, tokens[2].Position), nodes[0], (tokens[0].Position.Start, tokens[5].Position.End), new TypeDeclarationNode(tokens[4].Lex, tokens[4].Position)));
+        forHeader %= (forTerminal + openParenthesis + identifier + inTerminal + expression + closeParenthesis, (tokens, nodes) => new VariableDeclarationNode(new IdentifierDefinition(tokens[2].Lex, tokens[2].Position), nodes[0], (tokens[0].Position.Start, tokens[4].Position.End)));
 
         letHeader %= (letTerminal + identifier + typeDeclaration + assignmentTerminal + expression + multipleDeclaration + inTerminal, (tokens, nodes) =>
         {
@@ -272,20 +272,20 @@ public static class HulkGrammar
             return declarationList;
         }
         );
-        letHeader %= (letTerminal + identifier + typeDeclaration + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End), new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)), (tokens[0].Position.Start, tokens[4].Position.End)));
+        letHeader %= (letTerminal + identifier + typeDeclaration + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End), new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)), (tokens[0].Position.Start, tokens[4].Position.End)));
         letHeader %= (letTerminal + identifier + assignmentTerminal + expression + multipleDeclaration + inTerminal, (tokens, nodes) =>
         {
             var declarationList = (VariableDeclarationListNode)nodes[1];
-            declarationList.AppendDeclaration(new VariableDeclarationNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
+            declarationList.AppendDeclaration(new VariableDeclarationNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
             return declarationList;
         }
         );
-        letHeader %= (letTerminal + identifier + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)), (tokens[0].Position.Start, tokens[3].Position.End)));
+        letHeader %= (letTerminal + identifier + assignmentTerminal + expression + inTerminal, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)), (tokens[0].Position.Start, tokens[3].Position.End)));
 
         multipleDeclaration %= (comma + identifier + typeDeclaration + assignmentTerminal + expression + multipleDeclaration, (tokens, nodes) =>
         {
             var declarationList = nodes[1] as VariableDeclarationListNode ?? throw new Exception();
-            declarationList.AppendDeclaration(new VariableDeclarationNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End), new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)));
+            declarationList.AppendDeclaration(new VariableDeclarationNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End), new TypeDeclarationNode(tokens[2].Lex, tokens[2].Position)));
             return declarationList;
         }
         );
@@ -293,14 +293,16 @@ public static class HulkGrammar
         multipleDeclaration %= (comma + identifier + assignmentTerminal + expression + multipleDeclaration, (tokens, nodes) =>
         {
             var declarationList = nodes[1] as VariableDeclarationListNode ?? throw new Exception();
-            declarationList.AppendDeclaration(new VariableDeclarationNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
+            declarationList.AppendDeclaration(new VariableDeclarationNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)));
             return declarationList;
         }
         );
-        multipleDeclaration %= (comma + identifier + assignmentTerminal + expression, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(new IdentifierNode(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)), (tokens[0].Position.Start, nodes[0].Position.End)));
+        multipleDeclaration %= (comma + identifier + assignmentTerminal + expression, (tokens, nodes) => new VariableDeclarationListNode(new VariableDeclarationNode(new IdentifierDefinition(tokens[1].Lex, tokens[1].Position), nodes[0], (tokens[0].Position.Start, nodes[0].Position.End)), (tokens[0].Position.Start, nodes[0].Position.End)));
 
-        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elifExpression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], null, nodes[2], (tokens[0].Position.Start, nodes[2].Position.End)));
-        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], nodes[2], nodes[3], (tokens[0].Position.Start, nodes[3].Position.End)));
+        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elifExpression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], nodes[2], nodes[3], (tokens[0].Position.Start, nodes[3].Position.End)));
+        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elseTerminal + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], null, nodes[2], (tokens[0].Position.Start, nodes[2].Position.End)));
+        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression + elifExpression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], nodes[2], null, (tokens[0].Position.Start, nodes[2].Position.End)));
+        ifExpression %= (ifTerminal + openParenthesis + expression + closeParenthesis + expression, (tokens, nodes) => new IfNode(nodes[0], nodes[1], null, null, (tokens[0].Position.Start, nodes[1].Position.End)));
 
         elifExpression %= (elifExpression + elifTerminal + openParenthesis + expression + closeParenthesis + statement, (_, nodes) =>
         {
