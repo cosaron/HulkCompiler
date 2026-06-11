@@ -6,9 +6,9 @@ using HulkCompiler.SemanticAnalizer;
 using HulkCompiler.Utils;
 
 
-public static class HulkGrammar
+public static class HulkSyntax
 {
-    public static (Grammar, Dictionary<TokenType, Symbol>) GetGrammar()
+    public static (Grammar, Dictionary<TokenType, Symbol>) GetSyntax()
     {
         Grammar grammar = new();
 

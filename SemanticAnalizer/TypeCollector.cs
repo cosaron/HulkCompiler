@@ -32,17 +32,13 @@ namespace HulkCompiler.SemanticAnalizer
             {
                 if (definition is TypeDefinitionNode typeDefinition)
                 {
-                    if (types.ContainsKey(typeDefinition.Identifier.Value))
-                        //TODO add error to the stack(type already defined)
-                        throw new Exception();
-                    types.Add(typeDefinition.Identifier.Value, typeDefinition);
+                    if (!types.TryAdd(typeDefinition.Identifier.Value, typeDefinition))
+                        errorStack.AddError($"Type {typeDefinition.Identifier} already defined", typeDefinition.Identifier.Position.Start, typeDefinition.Identifier.Position.End);
                 }
                 else if (definition is ProtocolDefinitionNode protocolDefinition)
                 {
-                    if (protocols.ContainsKey(protocolDefinition.Identifier.Value))
-                        //TODO add error to the stack(protocol already defined)
-                        throw new Exception();
-                    protocols.Add(protocolDefinition.Identifier.Value, protocolDefinition);
+                    if (!protocols.TryAdd(protocolDefinition.Identifier.Value, protocolDefinition))
+                        errorStack.AddError($"Protocol {protocolDefinition.Identifier} already defined", protocolDefinition.Identifier.Position.Start, protocolDefinition.Identifier.Position.End);
                 }
             }
 
@@ -53,9 +49,11 @@ namespace HulkCompiler.SemanticAnalizer
                     if (typeDefinition.Inherits is not null)
                     {
                         if (!types.TryGetValue(typeDefinition.Inherits.Identifier.Value, out TypeDefinitionNode? inherits))
-                            //TODO add error to the stack(type not found)
-                            throw new Exception();
-                        if (!inheritsRelations.TryGetValue(inherits, out List<TypeDefinitionNode>? relations))
+                        {
+                            errorStack.AddError($"Type {typeDefinition.Inherits} is not defined", typeDefinition.Inherits.Position.Start, typeDefinition.Inherits.Position.End);
+                            continue;
+                        }
+                        if (!inheritsRelations.TryGetValue(inherits, out List<TypeDefinitionNode>? _))
                             inheritsRelations.Add(inherits, []);
                         else
                             inheritsRelations[inherits].Add(typeDefinition);
@@ -66,9 +64,11 @@ namespace HulkCompiler.SemanticAnalizer
                     foreach (var extend in protocolDefinition.Extends)
                     {
                         if (!protocols.TryGetValue(extend.Value, out ProtocolDefinitionNode? extends))
-                            //TODO add error to the stack(protocol not found)
-                            throw new Exception();
-                        if (!extendsRelations.TryGetValue(extends, out List<ProtocolDefinitionNode>? relations))
+                        {
+                            errorStack.AddError($"Protocol {extend} is not defined", extend.Position.Start, extend.Position.End);
+                            continue;
+                        }
+                        if (!extendsRelations.TryGetValue(extends, out List<ProtocolDefinitionNode>? _))
                             extendsRelations.Add(extends, []);
                         else
                             extendsRelations[extends].Add(protocolDefinition);
@@ -79,13 +79,16 @@ namespace HulkCompiler.SemanticAnalizer
 
             TypeDefinitionNode[]? sortedTypes = Functions.TopologicalSort(inheritsRelations);
             if (sortedTypes is null)
-                //TODO add error to the stack(circular inheritance)
-                throw new Exception();
-
+            {
+                errorStack.AddError("Circular inheritance detected", (-1, -1), (-1, -1));
+                return;
+            }
             ProtocolDefinitionNode[]? sortedProtocols = Functions.TopologicalSort(extendsRelations);
             if (sortedProtocols is null)
-                //TODO add error to the stack(circular inheritance)
-                throw new Exception();
+            {
+                errorStack.AddError("Circular protocol extension detected", (-1, -1), (-1, -1));
+                return;
+            }
 
             foreach (var type in sortedTypes)
                 type.Collect(this, context, errorStack);

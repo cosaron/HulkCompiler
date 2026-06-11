@@ -1,25 +1,26 @@
 {
   "format": 1,
   "restore": {
-    "/home/carlos/Code/HulkCompiler/HulkCompiler.csproj": {}
+    "/home/karlos_gr/Code/HulkCompiler/HulkCompiler.csproj": {}
   },
   "projects": {
-    "/home/carlos/Code/HulkCompiler/HulkCompiler.csproj": {
+    "/home/karlos_gr/Code/HulkCompiler/HulkCompiler.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/carlos/Code/HulkCompiler/HulkCompiler.csproj",
+        "projectUniqueName": "/home/karlos_gr/Code/HulkCompiler/HulkCompiler.csproj",
         "projectName": "HulkCompiler",
-        "projectPath": "/home/carlos/Code/HulkCompiler/HulkCompiler.csproj",
-        "packagesPath": "/home/carlos/.nuget/packages/",
-        "outputPath": "/home/carlos/Code/HulkCompiler/obj/",
+        "projectPath": "/home/karlos_gr/Code/HulkCompiler/HulkCompiler.csproj",
+        "packagesPath": "/home/karlos_gr/.nuget/packages/",
+        "outputPath": "/home/karlos_gr/Code/HulkCompiler/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/carlos/.nuget/NuGet/NuGet.Config"
+          "/home/karlos_gr/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "/usr/lib/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -32,7 +33,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -48,12 +55,26 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.26, 8.0.26]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.linux-x64",
+              "version": "[8.0.26, 8.0.26]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.26, 8.0.26]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.114/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/10.0.107/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

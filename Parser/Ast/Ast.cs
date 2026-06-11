@@ -2,7 +2,7 @@ namespace HulkCompiler.Parser.Ast;
 
 using System.Collections;
 using HulkCompiler.SemanticAnalizer;
-using HulkCompiler.Transpiler;
+// using HulkCompiler.Transpiler;
 using NodePosition = ((int Line, int Column) Start, (int Line, int Column) End);
 
 
@@ -39,7 +39,7 @@ public abstract class AstNode(NodePosition position)
     public void CollectAttr(IAstTypeCollector collector, Context context, ErrorStack errorStack) => collector.Collect(this, context, errorStack);
     public void Infer(IAstTypeInferer inferer, Context context, ErrorStack errorStack) => inferer.Infer(this, context, errorStack);
 
-    public void Transpile(IHulkTranspiler transpiler, Context context, ErrorStack errorStack) => transpiler.Transpile(this, context, errorStack);
+    // public void Transpile(IHulkTranspiler transpiler, Context context, ErrorStack errorStack) => transpiler.Transpile(this, context, errorStack);
 
 
 }

@@ -1,3 +1,2 @@
 ## Next Iteration Tasks
-
-- Change the position to Start (int,int) and End(int,int) better than line,columnStart and columnEnd
+- Improve the Circular Inheritance error detector (now only detects the error but not which class are in the circular inheritance) 
